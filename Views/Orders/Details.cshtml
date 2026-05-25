@@ -1,0 +1,219 @@
+@model QLquancafe.Models.Order
+
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+    Layout = Context.Session.GetInt32("CurrentTableId") != null ? "_CustomerLayout" : "_Layout";
+}
+
+<div class="row justify-content-center py-4 animate-fade-up">
+    <div class="col-lg-8 col-md-10">
+        
+        <!-- Thermal Receipt Container -->
+        <div class="thermal-receipt p-4 p-md-5">
+            
+            <!-- Receipt Header -->
+            <div class="text-center mb-4">
+                <div class="brand-receipt-icon mb-2">
+                    <i class="bi bi-cup-hot-fill fs-1 text-warning"></i>
+                </div>
+                <h2 class="fw-extrabold text-uppercase tracking-wide" style="color: var(--cafe-primary); font-weight: 800;">
+                    HÓA ĐƠN THANH TOÁN
+                </h2>
+                <p class="text-muted mb-0 font-monospace">Mã đơn: #@Model.Id</p>
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                    <span class="badge bg-primary rounded-pill px-3">Bàn @Model.TableNumber</span>
+                </div>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Receipt Metadata -->
+            <div class="row mb-4 fs-6">
+                <div class="col-6 mb-2">
+                    <span class="d-block text-muted small text-uppercase font-monospace">Ngày Bán</span>
+                    <strong class="text-dark"><i class="bi bi-calendar-event me-1"></i> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                </div>
+                <div class="col-6 mb-2 text-end">
+                    <span class="d-block text-muted small text-uppercase font-monospace">Trạng Thái</span>
+                    @if (Model.IsPaid)
+                    {
+                        <span class="text-success fw-bold d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-check-circle-fill"></i> ĐÃ THANH TOÁN
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-danger fw-bold d-inline-flex align-items-center gap-1 animate-pulse">
+                            <i class="bi bi-clock-history"></i> CHỜ THANH TOÁN
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Receipt Table -->
+            <div class="table-responsive mb-4">
+                <table class="table table-borderless align-middle receipt-table">
+                    <thead class="border-bottom border-top border-dark-subtle font-monospace" style="font-size: 0.8rem; background-color: var(--cafe-light);">
+                        <tr>
+                            <th class="py-2">Tên món</th>
+                            <th class="text-center py-2">SL</th>
+                            <th class="text-end py-2">Đơn giá</th>
+                            <th class="text-end py-2">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detail in Model.OrderDetails)
+                        {
+                            <tr class="border-bottom border-light-subtle">
+                                <td class="py-3">
+                                    <div class="fw-bold text-dark">
+                                        @detail.Product?.Name
+                                        @if (!string.IsNullOrEmpty(detail.Size))
+                                        {
+                                            <span class="badge bg-primary ms-1" style="font-size: 0.7rem; padding: 0.25em 0.5em;">Size @detail.Size</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(detail.SugarLevel) || !string.IsNullOrEmpty(detail.IceLevel))
+                                    {
+                                        <div class="small text-muted mt-1 d-flex flex-wrap gap-1" style="font-size: 0.75rem;">
+                                            @if (!string.IsNullOrEmpty(detail.SugarLevel)) { <span class="badge bg-light text-dark border">Đường: @detail.SugarLevel</span> }
+                                            @if (!string.IsNullOrEmpty(detail.IceLevel)) { <span class="badge bg-light text-dark border">Đá: @detail.IceLevel</span> }
+                                        </div>
+                                    }
+                                </td>
+                                <td class="text-center fw-bold">@detail.Quantity</td>
+                                <td class="text-end text-muted font-monospace">@detail.UnitPrice.ToString("N0")</td>
+                                <td class="text-end fw-bold text-dark font-monospace">@((detail.Quantity * detail.UnitPrice).ToString("N0"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Receipt Summary Footer -->
+            <div class="row mt-4">
+                <div class="col-md-7 mb-3 mb-md-0">
+                    @if (Model.IsPaid)
+                    {
+                        <div class="alert alert-success d-inline-flex align-items-center gap-2 border-0 bg-success-subtle text-success py-2 px-3 rounded-pill mb-0" style="font-size: 0.85rem;">
+                            <i class="bi bi-info-circle-fill"></i> Bàn này đã được phục vụ xong và dọn trống.
+                        </div>
+                    }
+                </div>
+                <div class="col-md-5">
+                    <div class="receipt-total-box d-flex justify-content-between align-items-center p-3">
+                        <span class="fw-bold text-uppercase text-muted" style="font-size: 0.85rem; letter-spacing: 1px;">TỔNG CỘNG</span>
+                        <h4 class="text-danger fw-extrabold mb-0 fs-3 font-monospace">@Model.TotalAmount.ToString("N0") đ</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="receipt-divider no-print"></div>
+
+            <!-- Business Operations CTA Buttons -->
+            <div class="mt-4 no-print text-center d-flex flex-wrap justify-content-center gap-2">
+                @if (!Model.IsPaid)
+                {
+                    if (Context.Session.GetInt32("CurrentTableId") == null)
+                    {
+                        <form asp-action="Pay" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success btn-pill px-4 shadow">
+                                <i class="bi bi-cash-stack"></i> TIỀN MẶT
+                            </button>
+                        </form>
+                        
+                        <a asp-controller="Payment" asp-action="CreatePaymentUrl" asp-route-orderId="@Model.Id" class="btn btn-cafe btn-pill px-4 shadow">
+                            <i class="bi bi-credit-card-2-front"></i> THANH TOÁN VNPAY
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Payment" asp-action="CreatePaymentUrl" asp-route-orderId="@Model.Id" class="btn btn-cafe btn-pill px-4 shadow">
+                            <i class="bi bi-credit-card-2-front"></i> TỰ THANH TOÁN VNPAY
+                        </a>
+                        <button type="button" class="btn btn-outline-warning btn-pill px-4 shadow" id="call-staff-cash-btn">
+                            <i class="bi bi-cash-stack"></i> Thanh toán tiền mặt
+                        </button>
+                    }
+                }
+
+                <button onclick="window.print()" class="btn btn-outline-primary btn-pill px-4">
+                    <i class="bi bi-printer"></i> In Hóa Đơn
+                </button>
+
+                @if (!Model.IsPaid)
+                {
+                    <a asp-controller="Orders" asp-action="Create" asp-route-tableId="@Model.TableId" class="btn btn-outline-secondary btn-pill px-4">
+                        <i class="bi bi-cart-plus"></i> Gọi thêm món
+                    </a>
+                }
+
+                @if (Context.Session.GetInt32("CurrentTableId") == null)
+                {
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark btn-pill px-4">
+                        <i class="bi bi-arrow-left"></i> Quay lại sơ đồ
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .brand-receipt-icon {
+            display: inline-flex;
+            width: 70px;
+            height: 70px;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--cafe-light);
+            border-radius: 50%;
+            border: 2px dashed rgba(62, 39, 35, 0.15);
+        }
+
+        .receipt-table th, .receipt-table td {
+            font-size: 0.95rem;
+        }
+
+        @@media print {
+            body {
+                background-color: #FFFFFF !important;
+                color: #000000 !important;
+            }
+            .no-print, header, footer, .navbar, .btn {
+                display: none !important;
+            }
+            .main-container {
+                padding-top: 0 !important;
+                margin: 0 !important;
+            }
+            .thermal-receipt {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background: #FFFFFF !important;
+            }
+            .thermal-receipt::before {
+                display: none !important;
+            }
+            .col-lg-8 {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $("#call-staff-cash-btn").click(function() {
+                // Trigger the staff call button click from the customer layout
+                $("#call-staff-btn").click();
+            });
+        });
+    </script>
+}

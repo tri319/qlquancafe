@@ -1,0 +1,35 @@
+@model QLquancafe.Models.ViewModels.AdminUserViewModel
+
+@{
+    ViewData["Title"] = "Xóa tài khoản";
+}
+
+<div class="card shadow-sm mt-4 border-danger border-2 col-md-6 offset-md-3">
+    <div class="card-header bg-danger text-white">
+        <h4 class="card-title mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Xác nhận xóa tài khoản</h4>
+    </div>
+    <div class="card-body">
+        <h5 class="card-text text-center text-danger mb-4">Bạn có chắc chắn muốn xóa tài khoản nhân viên này không? Tính năng này không thể hoàn tác!</h5>
+        
+        <table class="table table-bordered">
+            <tr>
+                <th class="bg-light w-25">Email</th>
+                <td><strong>@Model.Email</strong></td>
+            </tr>
+            <tr>
+                <th class="bg-light">Quyền</th>
+                <td><span class="badge bg-secondary">@Model.Role</span></td>
+            </tr>
+        </table>
+
+        <form asp-action="Delete" class="mt-4 d-flex justify-content-between">
+            <input type="hidden" asp-for="Id" />
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Hủy / Quay lại
+            </a>
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Xác nhận Xóa
+            </button>
+        </form>
+    </div>
+</div>

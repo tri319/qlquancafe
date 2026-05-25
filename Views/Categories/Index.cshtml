@@ -1,0 +1,61 @@
+@model IEnumerable<QLquancafe.Models.Category>
+
+@{
+    ViewData["Title"] = "Quản lý loại món";
+}
+
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-5 animate-fade-up">
+    <div>
+        <span class="text-uppercase tracking-wider text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1.5px;">Quản Trị Hệ Thống</span>
+        <h2 class="fw-extrabold mb-0" style="color: var(--cafe-primary); font-weight: 800;">
+            <i class="bi bi-tags-fill me-2" style="color: var(--cafe-secondary);"></i> QUẢN LÝ LOẠI MÓN
+        </h2>
+    </div>
+    
+    <a asp-action="Create" class="btn btn-cafe btn-pill shadow">
+        <i class="bi bi-plus-circle-fill"></i> Thêm loại món mới
+    </a>
+</div>
+
+<!-- Modern Glass Data Table -->
+<div class="table-modern-wrapper animate-fade-up" style="animation-delay: 0.1s; max-width: 800px; margin: 0 auto;">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th class="ps-4">Tên loại món</th>
+                <th class="text-center pe-4" style="width: 250px;">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="2" class="text-center text-muted py-5">
+                        <div class="py-4">
+                            <i class="bi bi-inbox text-light display-3"></i>
+                            <p class="mt-2 mb-0 fw-bold fs-5">Danh sách loại món trống.</p>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="ps-4">
+                        <strong class="text-dark fs-6"><i class="bi bi-bookmark-fill text-muted me-2" style="font-size: 0.85rem;"></i> @item.Name</strong>
+                    </td>
+                    <td class="text-center pe-4">
+                        <div class="d-inline-flex gap-1">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light btn-pill border" style="font-size: 0.85rem;">
+                                <i class="bi bi-pencil-square text-warning"></i> Sửa
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-light btn-pill border" style="font-size: 0.85rem;">
+                                <i class="bi bi-trash text-danger"></i> Xóa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

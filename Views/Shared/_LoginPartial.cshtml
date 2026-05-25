@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav align-items-center mt-3 mt-lg-0">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item d-flex align-items-center mb-2 mb-lg-0 me-lg-2">
+            <div class="nav-link text-dark fw-bold border rounded-pill px-3 bg-light d-flex align-items-center gap-2" style="border-color: rgba(141, 110, 99, 0.2) !important;">
+                <i class="bi bi-person-circle fs-5" style="color: var(--cafe-primary);"></i>
+                <span style="font-size: 0.9rem;">@User.Identity?.Name</span>
+                @if (User.IsInRole("Admin"))
+                {
+                    <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 0.75rem;">Admin</span>
+                }
+                else if (User.IsInRole("Staff"))
+                {
+                    <span class="badge bg-warning-subtle text-warning rounded-pill" style="font-size: 0.75rem;">Staff</span>
+                }
+            </div>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-danger border-0 d-flex align-items-center gap-1 bg-transparent">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item mb-2 mb-lg-0">
+            <a class="nav-link text-dark d-flex align-items-center gap-1" asp-area="Identity" asp-page="/Account/Register">
+                <i class="bi bi-person-plus"></i> Đăng ký
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-outline-primary ms-lg-2 px-4 rounded-pill d-flex align-items-center gap-1 btn-sm" asp-area="Identity" asp-page="/Account/Login">
+                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+            </a>
+        </li>
+    }
+</ul>

@@ -1,0 +1,591 @@
+@model IEnumerable<QLquancafe.Models.Product>
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Gọi món - Bàn " + ViewBag.TableId;
+    Layout = Context.Session.GetInt32("CurrentTableId") != null ? "_CustomerLayout" : "_Layout";
+}
+
+<div class="container py-4 animate-fade-up">
+    <!-- Header Area -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-5">
+        <div>
+            <span class="text-uppercase tracking-wider text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1.5px;">Hệ Thống Đặt Món</span>
+            <h2 class="fw-extrabold mb-0" style="color: var(--cafe-primary); font-weight: 800;">
+                <i class="bi bi-cart-plus-fill text-warning me-2 fs-3"></i> BÀN PHỤC VỤ #@ViewBag.TableId
+            </h2>
+        </div>
+        
+        @if (Context.Session.GetInt32("CurrentTableId") != null)
+        {
+            <a asp-controller="Client" asp-action="LeaveTable" class="btn btn-outline-danger btn-pill btn-sm py-2">
+                <i class="bi bi-box-arrow-right"></i> Rời bàn & Thoát
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-pill btn-sm py-2">
+                <i class="bi bi-arrow-left"></i> Sơ đồ bàn
+            </a>
+        }
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"></i>
+            <strong>Lỗi!</strong> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+        <!-- Quảng Cáo & Khuyến Mãi (Advertising Carousel) -->
+        <div id="promoCarousel" class="carousel slide mb-5 rounded-4 shadow overflow-hidden animate-fade-up" data-bs-ride="carousel" style="animation-delay: 0.05s;">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+            <div class="carousel-inner">
+                <!-- Slide 1: Khuyến Mãi đặc biệt với ảnh nền thực tế -->
+                <div class="carousel-item active">
+                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(45, 26, 18, 0.75), rgba(45, 26, 18, 0.75)), url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
+                        <div class="promo-content text-start">
+                            <span class="badge bg-warning text-dark text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Khuyến Mãi Đặc Biệt</span>
+                            <h3 class="fw-bold fs-1 mb-2 text-warning">GIẢM 15% CHO ĐƠN TẠI BÀN</h3>
+                            <p class="mb-0 text-white-50 fs-6">Nhập mã bàn của bạn và bắt đầu gọi món trực tuyến để nhận ưu đãi ngay hôm nay!</p>
+                        </div>
+                        <div class="promo-icon d-none d-md-block ms-4">
+                            <i class="bi bi-gift fs-1 text-warning opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slide 2: Món mới với ảnh nền latte mật ong ngọt ngào -->
+                <div class="carousel-item">
+                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(239, 108, 0, 0.7), rgba(239, 108, 0, 0.7)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
+                        <div class="promo-content text-start">
+                            <span class="badge bg-white text-dark text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Món Mới Tuần Này</span>
+                            <h3 class="fw-bold fs-1 mb-2 text-white">GOLDEN HONEY LATTE</h3>
+                            <p class="mb-0 text-white-50 fs-6">Sự pha trộn ngọt ngào giữa mật ong tự nhiên nguyên chất và cà phê Arabica hảo hạng.</p>
+                        </div>
+                        <div class="promo-icon d-none d-md-block ms-4">
+                            <i class="bi bi-cup-hot fs-1 text-white opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slide 3: Thanh toán với ảnh nền thanh toán tiện lợi -->
+                <div class="carousel-item">
+                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(21, 101, 192, 0.75), rgba(21, 101, 192, 0.75)), url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
+                        <div class="promo-content text-start">
+                            <span class="badge bg-info text-white text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Thanh Toán Tiện Lợi</span>
+                            <h3 class="fw-bold fs-1 mb-2 text-info-emphasis">QUÉT MÃ VNPAY NHANH CHÓNG</h3>
+                            <p class="mb-0 text-white-50 fs-6">Hỗ trợ thanh toán bảo mật bằng ứng dụng ngân hàng ngay tại bàn không cần chờ đợi!</p>
+                        </div>
+                        <div class="promo-icon d-none d-md-block ms-4">
+                            <i class="bi bi-qr-code-scan fs-1 text-white opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+    <!-- Search & Filter Category Section -->
+    <div class="search-filter-wrapper mb-5 p-3 rounded-4 bg-white shadow-sm border animate-fade-up" style="animation-delay: 0.1s;">
+        <!-- Search bar -->
+        <div class="position-relative mb-2">
+            <input type="text" id="searchInput" class="form-control form-control-lg btn-pill px-4 ps-5" placeholder="Tìm kiếm món ăn ngon tại đây...">
+            <i class="bi bi-search position-absolute start-0 top-50 translate-middle-y ms-4 text-muted fs-5"></i>
+        </div>
+        
+        <!-- Category Pills (Horizontal scrollable) -->
+        <div class="category-scroll-container">
+            <button type="button" class="btn btn-filter active-pill btn-cafe" data-category="All">Tất cả</button>
+            @foreach (var cat in Model.Select(p => p.Category?.Name).Where(c => !string.IsNullOrEmpty(c)).Distinct())
+            {
+                <button type="button" class="btn btn-filter btn-light text-nowrap" data-category="@cat">@cat</button>
+            }
+        </div>
+    </div>
+
+    <form asp-action="Checkout" method="post" id="orderForm">
+        <input type="hidden" name="tableId" value="@ViewBag.TableId" />
+
+        <!-- Products Grouped by Category -->
+        <div id="productList">
+            @foreach (var group in Model.GroupBy(p => p.Category?.Name ?? "Món Khác").OrderBy(g => g.Key))
+            {
+                <div class="category-section mb-5 animate-fade-up" data-category="@group.Key">
+                    <h3 class="fw-bold mb-4 pb-2 border-bottom text-uppercase d-flex align-items-center justify-content-between" style="color: var(--cafe-primary); border-color: rgba(141, 110, 99, 0.15) !important;">
+                        <span>
+                            <i class="bi bi-tag-fill text-warning me-2"></i> @group.Key
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill font-monospace fw-normal" style="font-size: 0.85rem;">@group.Count() món</span>
+                    </h3>
+                    <div class="row g-4">
+                        @foreach (var item in group)
+                        {
+                            <div class="col-6 col-md-4 col-lg-3 product-item" data-name="@item.Name.ToLower()" data-category="@group.Key">
+                                <div class="card h-100 product-card card-hover d-flex flex-column">
+                                    <div class="position-relative overflow-hidden card-image-container">
+                                        @* Nổi bật các nhãn Bán chạy / Mới nhất cho thực đơn thêm hấp dẫn *@
+                                        @if (item.Id % 3 == 0)
+                                        {
+                                            <span class="position-absolute top-0 start-0 m-3 badge bg-danger text-white rounded-pill px-3 py-2 shadow-sm font-monospace text-uppercase" style="z-index: 10; font-size: 0.75rem; letter-spacing: 0.5px;">
+                                                <i class="bi bi-fire"></i> Bán Chạy
+                                            </span>
+                                        }
+                                        else if (item.Id % 4 == 0)
+                                        {
+                                            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm font-monospace text-uppercase" style="z-index: 10; font-size: 0.75rem; letter-spacing: 0.5px;">
+                                                <i class="bi bi-stars"></i> Mới Nhất
+                                            </span>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="card-img-top product-img" alt="@item.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="no-image-visual d-flex flex-column align-items-center justify-content-center">
+                                                <i class="bi bi-cup-hot fs-1 text-white-50"></i>
+                                                <span class="text-white-50 small mt-1">QL Cafe</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    
+                                    <div class="card-body text-center d-flex flex-column p-3">
+                                        <h5 class="fw-extrabold mb-1 text-dark text-wrap" style="min-height: 3.4rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; font-size: 1.32rem !important; font-weight: 800;" title="@item.Name">@item.Name</h5>
+                                        <p class="text-danger fw-extrabold mb-3" style="font-size: 1.45rem !important; letter-spacing: 0.5px;">@item.Price.ToString("N0") đ</p>
+
+                                        <input type="hidden" name="productIds" value="@item.Id" />
+                                         
+                                        <!-- Customizations -->
+                                        @{
+                                            var categoryName = item.Category?.Name;
+                                            bool isSoftDrink = !string.IsNullOrEmpty(categoryName) && 
+                                                              (categoryName.Contains("nước giải khát", StringComparison.OrdinalIgnoreCase) || 
+                                                               categoryName.Contains("nước giải khác", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("các loại nước khác", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("nước đóng chai", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("nước ngọt", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("nước suối", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("bia", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("lon", StringComparison.OrdinalIgnoreCase) ||
+                                                               categoryName.Contains("chai", StringComparison.OrdinalIgnoreCase));
+                                        }
+
+                                        @if (isSoftDrink)
+                                        {
+                                            <div style="display: none;">
+                                                <select name="sizes">
+                                                    <option value="" selected></option>
+                                                </select>
+                                                <select name="sugarLevels">
+                                                    <option value="" selected></option>
+                                                </select>
+                                                <select name="iceLevels">
+                                                    <option value="" selected></option>
+                                                </select>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="mb-2 text-start">
+                                                <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Kích thước</label>
+                                                <select name="sizes" class="form-select form-select-lg fw-bold text-dark border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                    <option value="M">Size M</option>
+                                                    <option value="L">Size L (+10.000 đ)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="row g-2 mb-3 text-start">
+                                                <div class="col-6">
+                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Đường</label>
+                                                    <select name="sugarLevels" class="form-select form-select-lg fw-bold border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                        <option value="100%">100%</option>
+                                                        <option value="70%">70%</option>
+                                                        <option value="50%" selected>50%</option>
+                                                        <option value="30%">30%</option>
+                                                        <option value="0%">Không</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Đá</label>
+                                                    <select name="iceLevels" class="form-select form-select-lg fw-bold border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                        <option value="100%">100%</option>
+                                                        <option value="70%">70%</option>
+                                                        <option value="50%" selected>50%</option>
+                                                        <option value="0%">Không</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                         
+                                        <!-- Qty Counter -->
+                                        <div class="input-group input-group-sm mt-auto justify-content-center qty-group bg-light rounded-pill p-1">
+                                            <button type="button" class="btn btn-light rounded-circle btn-minus d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; padding: 0;">
+                                                <i class="bi bi-dash fs-6"></i>
+                                            </button>
+                                            <input type="number" name="quantities" value="0" min="0"
+                                                   class="form-control text-center qty-input mx-1 border-0 bg-transparent fw-bold fs-6 shadow-none" style="max-width: 45px;" data-price="@item.Price" />
+                                            <button type="button" class="btn btn-cafe rounded-circle btn-plus d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; padding: 0;">
+                                                <i class="bi bi-plus fs-6"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- No Products Found Message -->
+        <div id="noProductsMessage" class="text-center py-5 d-none animate-fade-up">
+            <i class="bi bi-search text-muted display-1"></i>
+            <h4 class="mt-3 fw-bold text-muted">Không tìm thấy món ăn nào</h4>
+            <p class="text-muted">Vui lòng thử tìm với từ khóa khác.</p>
+        </div>
+
+        <!-- Space for sticky tray -->
+        <div style="height: 120px;"></div>
+
+        <!-- Floating Glass checkout tray -->
+        <div class="fixed-bottom glass-panel border-top p-3 shadow-lg tray-float" style="z-index: 1000; border-radius: var(--radius-md) var(--radius-md) 0 0;">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="text-start">
+                    <span class="fw-bold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 1.5px; color: var(--cafe-text-muted);">Tổng Tạm Tính</span>
+                    <h3 class="text-danger fw-extrabold mb-0 fs-2" id="liveTotalAmount">0 đ</h3>
+                </div>
+                <button type="submit" class="btn btn-cafe btn-pill btn-lg px-5 shadow-lg d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                    <i class="bi bi-check2-circle fs-5"></i> XÁC NHẬN MÓN
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            var selectedCategory = "All";
+
+            function updateTotal() {
+
+                let total = 0;
+
+                $('.product-item').each(function () {
+
+                    let qty = parseInt(
+                        $(this).find('.qty-input').val()
+                    ) || 0;
+
+                    let basePrice = parseFloat(
+                        $(this).find('.qty-input').data('price')
+                    ) || 0;
+
+                    let size = $(this)
+                        .find('select[name="sizes"]')
+                        .val();
+
+                    let finalPrice = basePrice;
+
+                    // Cộng thêm 10k nếu size L
+                    if (size === "L") {
+                        finalPrice += 10000;
+                    }
+
+                    total += qty * finalPrice;
+                });
+
+                $('#liveTotalAmount').text(
+                    total.toLocaleString('vi-VN') + ' đ'
+                );
+
+                // Hiệu ứng tray
+                if (total > 0) {
+                    $('.tray-float').addClass('tray-active');
+                } else {
+                    $('.tray-float').removeClass('tray-active');
+                }
+            }
+
+            // Plus quantity
+            $('.btn-plus').click(function () {
+
+                var input = $(this).siblings('.qty-input');
+
+                input.val(
+                    parseInt(input.val() || 0) + 1
+                );
+
+                updateTotal();
+            });
+
+            // Minus quantity
+            $('.btn-minus').click(function () {
+
+                var input = $(this).siblings('.qty-input');
+
+                var currentVal =
+                    parseInt(input.val() || 0);
+
+                if (currentVal > 0) {
+
+                    input.val(currentVal - 1);
+
+                    updateTotal();
+                }
+            });
+
+            // Nhập số lượng
+            $('.qty-input').on('input', function () {
+
+                if ($(this).val() < 0) {
+                    $(this).val(0);
+                }
+
+                updateTotal();
+            });
+
+            // Đổi size => cập nhật tiền
+            $('select[name="sizes"]').change(function () {
+                updateTotal();
+            });
+
+            // Search filtering
+            $('#searchInput').on('input', filterProducts);
+
+            // Category filter
+            $('.btn-filter').click(function () {
+
+                $('.btn-filter')
+                    .removeClass('active-pill btn-cafe')
+                    .addClass('btn-light');
+
+                $(this)
+                    .addClass('active-pill btn-cafe')
+                    .removeClass('btn-light');
+
+                selectedCategory = $(this).data('category');
+
+                filterProducts();
+            });
+
+            function filterProducts() {
+
+                var searchStr =
+                    $('#searchInput').val().toLowerCase();
+
+                let totalVisible = 0;
+
+                $('.category-section').each(function () {
+
+                    var sectionCat =
+                        $(this).data('category') || '';
+
+                    var showSection =
+                        (selectedCategory === 'All'
+                            || sectionCat === selectedCategory);
+
+                    let visibleCount = 0;
+
+                    $(this).find('.product-item').each(function () {
+
+                        var itemName =
+                            $(this).data('name') || '';
+
+                        if (
+                            itemName.indexOf(searchStr) > -1
+                            && showSection
+                        ) {
+
+                            $(this).removeClass('d-none');
+
+                            visibleCount++;
+
+                            totalVisible++;
+                        }
+                        else {
+
+                            $(this).addClass('d-none');
+                        }
+                    });
+
+                    if (visibleCount > 0) {
+
+                        $(this).removeClass('d-none');
+                    }
+                    else {
+
+                        $(this).addClass('d-none');
+                    }
+                });
+
+                if (totalVisible === 0) {
+
+                    $('#noProductsMessage')
+                        .removeClass('d-none');
+                }
+                else {
+
+                    $('#noProductsMessage')
+                        .addClass('d-none');
+                }
+            }
+
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .product-card {
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(141, 110, 99, 0.08);
+            background-color: var(--cafe-surface);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        
+        .card-image-container {
+            height: 235px; /* Tăng chiều cao của ảnh món để nổi bật hơn hẳn */
+            background: linear-gradient(135deg, var(--cafe-accent) 0%, var(--cafe-secondary) 100%);
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .product-img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.15); /* Phóng to nổi bật cực mạnh khi di chuột */
+        }
+
+        /* CSS slide quảng cáo */
+        .promo-slide {
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+        }
+        .promo-content {
+            max-width: 70%;
+            z-index: 5;
+        }
+        .promo-icon {
+            font-size: 5.5rem;
+            transform: rotate(12deg);
+            opacity: 0.8;
+            z-index: 2;
+        }
+        .carousel-indicators [data-bs-target] {
+            background-color: rgba(255, 255, 255, 0.4);
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin: 0 4px;
+        }
+        .carousel-indicators .active {
+            background-color: #FFFFFF;
+            width: 22px;
+            border-radius: 5px;
+        }
+
+        .no-image-visual {
+            height: 100%;
+            width: 100%;
+        }
+
+        .qty-group button {
+            transition: all 0.2s ease;
+        }
+        .qty-group button:active {
+            transform: scale(0.9);
+        }
+        
+        .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Search & Filter wrapper */
+        .search-filter-wrapper {
+            background: #FFFFFF;
+            border-radius: 20px;
+            border: 1px solid rgba(141, 110, 99, 0.08);
+            box-shadow: 0 10px 30px rgba(62, 39, 35, 0.03);
+            padding: 20px;
+        }
+        .search-filter-wrapper .form-control {
+            border: 1.5px solid rgba(141, 110, 99, 0.12) !important;
+            font-size: 1.05rem;
+            transition: all 0.25s ease;
+            background-color: var(--cafe-light) !important;
+        }
+        .search-filter-wrapper .form-control:focus {
+            border-color: var(--cafe-secondary) !important;
+            box-shadow: 0 0 0 4px rgba(141, 110, 99, 0.08) !important;
+            background-color: #FFFFFF !important;
+        }
+
+        /* Horizontal scrollable category list */
+        .category-scroll-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 8px;
+            margin-top: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(141, 110, 99, 0.3) transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+        .category-scroll-container::-webkit-scrollbar {
+            height: 5px;
+        }
+        .category-scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .category-scroll-container::-webkit-scrollbar-thumb {
+            background-color: rgba(141, 110, 99, 0.25);
+            border-radius: 10px;
+        }
+        .category-scroll-container .btn-filter {
+            flex: 0 0 auto;
+            border-radius: 50px;
+            font-weight: 600;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            border: 1.5px solid rgba(141, 110, 99, 0.12);
+            transition: all 0.25s ease;
+        }
+        
+        .active-pill {
+            border-color: transparent !important;
+            box-shadow: 0 4px 12px rgba(62, 39, 35, 0.15);
+        }
+
+        /* Tray animations */
+        .tray-float {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+            transform: translateY(10px);
+        }
+        .tray-active {
+            transform: translateY(0);
+            border-top: 2.5px solid var(--cafe-secondary) !important;
+            box-shadow: 0 -10px 30px rgba(62, 39, 35, 0.12) !important;
+        }
+    </style>
+}

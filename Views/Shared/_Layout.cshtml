@@ -1,0 +1,132 @@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Quản Lý Quán Cafe</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/QLquancafe.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-sidebar navbar-expand-lg navbar-light fixed-top glass-panel px-3 px-md-4 py-2">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-extrabold d-flex align-items-center" style="color: var(--cafe-primary); font-weight: 800;" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-cup-hot-fill text-warning me-2 fs-4"></i> QL CAFE
+                </a>
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="bi bi-list fs-2 text-dark"></span>
+                </button>
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between align-items-center mt-3 mt-lg-0">
+                    <ul class="navbar-nav flex-grow-1 align-items-lg-center">
+
+                        @* Lấy thông tin bàn từ Session *@
+                        @{
+                            var currentTableName = HttpContextAccessor.HttpContext.Session.GetString("CurrentTableName");
+                        }
+
+                        @* 1. Menu dùng chung *@
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-grid-3x3-gap-fill me-1 text-muted"></i> Sơ đồ bàn
+                            </a>
+                        </li>
+
+                        @* HIỂN THỊ THÔNG TIN BÀN NẾU KHÁCH ĐÃ "ĐĂNG NHẬP" BÀN *@
+                        @if (!string.IsNullOrEmpty(currentTableName))
+                        {
+                            <li class="nav-item d-flex align-items-center ms-lg-2">
+                                <div class="table-info-badge">
+                                    <i class="bi bi-geo-alt-fill text-danger animate-pulse"></i> @currentTableName
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger fw-bold" asp-controller="Client" asp-action="LeaveTable">
+                                    <i class="bi bi-box-arrow-left"></i> Rời bàn
+                                </a>
+                            </li>
+                        }
+
+                        @* 2. Menu dành cho Admin và Nhân viên *@
+                        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                        {
+                            <li class="nav-item border-start-lg ms-lg-3 ps-lg-3">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">
+                                    <i class="bi bi-journal-text me-1 text-muted"></i> Thực đơn
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index">
+                                    <i class="bi bi-tags-fill me-1 text-muted"></i> Loại món
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">
+                                    <i class="bi bi-receipt-cutoff me-1 text-muted"></i> Quản lý hóa đơn
+                                </a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item border-start-lg ms-lg-3 ps-lg-3">
+                                <a class="nav-link text-primary fw-bold" asp-area="" asp-controller="AdminUsers" asp-action="Index">
+                                    <i class="bi bi-people-fill me-1 text-primary"></i> Quản lý nhân viên
+                                </a>
+                            </li>
+                        }
+
+                        @* 3. Menu dành cho Khách có tài khoản Identity *@
+                        @if (User.IsInRole("Customer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-success fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-stars text-warning me-1"></i> Đặt món Online
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    @* 4. Phần Đăng nhập/Đăng xuất của hệ thống *@
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container main-container animate-fade-up">
+        <main role="main" class="pb-5">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function () {
+            var currentUrl = window.location.pathname.toLowerCase();
+            $('.navbar-nav .nav-link').each(function () {
+                var linkUrl = $(this).attr('href');
+                if (linkUrl) {
+                    linkUrl = linkUrl.toLowerCase();
+                    if (currentUrl === linkUrl || (currentUrl.startsWith(linkUrl) && linkUrl !== "/")) {
+                        $(this).parent().addClass('active');
+                    }
+                }
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

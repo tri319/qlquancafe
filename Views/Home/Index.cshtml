@@ -1,0 +1,168 @@
+@model IEnumerable<QLquancafe.Models.Table>
+@{
+    ViewData["Title"] = "Sơ đồ bàn - Quản Lý Quán Cafe";
+    var occupiedTables = ViewBag.OccupiedTables as List<int> ?? new List<int>();
+}
+
+<div class="text-center my-5 animate-fade-up">
+    <h1 class="display-5 fw-extrabold" style="color: var(--cafe-primary); font-weight: 800; letter-spacing: 0.5px;">
+        <i class="bi bi-grid-fill me-2" style="color: var(--cafe-secondary);"></i>SƠ ĐỒ BÀN
+    </h1>
+    <p class="lead text-muted fw-medium fs-6">Hệ thống quản lý trạng thái bàn thời gian thực trực quan</p>
+</div>
+
+<div class="container animate-fade-up" style="animation-delay: 0.15s;">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+        @foreach (var table in Model)
+        {
+            bool isBusy = occupiedTables.Contains(table.Id) || table.Status == "Có khách";
+
+            <div class="col">
+                <div class="card h-100 table-card @(isBusy ? "card-busy" : "card-free")">
+                    <div class="card-header text-center border-0 pt-4 pb-0">
+                        <h5 class="fw-bold mb-0 text-uppercase tracking-wider @(isBusy ? "text-white" : "text-dark")" style="font-size: 1.1rem; letter-spacing: 0.5px;">
+                            @table.TableName
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div class="mb-3 widget-icon @(isBusy ? "icon-busy" : "icon-free")">
+                            @if (isBusy)
+                            {
+                                <i class="bi bi-cup-hot-fill"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-circle-dashed text-success-emphasis"></i>
+                            }
+                        </div>
+
+                        <div class="mb-4 text-center">
+                            @if (isBusy)
+                            {
+                                <span class="badge bg-white text-danger fw-bold rounded-pill px-3 py-2 shadow-sm text-uppercase" style="font-size: 0.75rem;">
+                                    Đang Phục Vụ
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success-subtle text-success fw-bold rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.75rem;">
+                                    Bàn Trống
+                                </span>
+                            }
+                        </div>
+
+                        <div class="mt-auto w-100">
+                            @if (isBusy)
+                            {
+                                <div class="d-flex w-100 gap-2">
+                                    <a asp-controller="Orders" asp-action="Create" asp-route-tableId="@table.Id"
+                                       class="btn btn-light btn-pill w-50 py-2 border-0 shadow-sm fw-bold" style="font-size: 0.85rem;" title="Gọi thêm món">
+                                        <i class="bi bi-plus-lg"></i> Gọi
+                                    </a>
+                                    <a asp-controller="Orders" asp-action="ActiveOrder" asp-route-tableId="@table.Id"
+                                       class="btn btn-dark btn-pill w-50 py-2 border-0 shadow-sm fw-bold" style="font-size: 0.85rem;" title="Xem hóa đơn/Thanh toán">
+                                        Bill <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <a asp-controller="Orders" asp-action="Create" asp-route-tableId="@table.Id"
+                                   class="btn btn-outline-primary btn-pill w-100 py-2 fw-bold" style="font-size: 0.85rem;">
+                                    <i class="bi bi-door-open-fill me-1"></i> Mở Bàn
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .table-card {
+            border-radius: var(--radius-lg);
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            background: var(--cafe-surface);
+        }
+
+        .table-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            z-index: 5;
+        }
+
+        /* Free Table Styling */
+        .card-free {
+            border-color: rgba(46, 125, 50, 0.12);
+            box-shadow: var(--shadow-soft);
+        }
+        .card-free:hover {
+            box-shadow: 0 16px 36px rgba(46, 125, 50, 0.08);
+            border-color: var(--success-color);
+        }
+
+        /* Busy Table Styling - Sunburst gold gradient */
+        .card-busy {
+            background: linear-gradient(135deg, #D84315 0%, #FFB300 100%);
+            border: none;
+            box-shadow: 0 12px 30px rgba(216, 67, 21, 0.22);
+            position: relative;
+        }
+        .card-busy::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 0 0 0 rgba(216, 67, 21, 0.45);
+            animation: pulse-ring 2.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .card-busy .card-header h5 {
+            text-shadow: 0 2px 4px rgba(62, 39, 35, 0.2);
+        }
+
+        /* Widget Icon styling */
+        .widget-icon {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            transition: transform 0.4s ease;
+        }
+        .table-card:hover .widget-icon {
+            transform: rotate(-8deg) scale(1.08);
+        }
+        
+        .icon-free {
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border: 1px solid rgba(46, 125, 50, 0.15);
+        }
+        .icon-busy {
+            background-color: rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Pulsing Glow Animation */
+        @@keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(216, 67, 21, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(216, 67, 21, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(216, 67, 21, 0);
+            }
+        }
+    </style>
+}

@@ -1,0 +1,58 @@
+@model QLquancafe.Models.Product
+
+@{
+    ViewData["Title"] = "Xóa món";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mt-4">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="bi bi-trash"></i> Xóa sản phẩm</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="bi bi-exclamation-triangle"></i> Bạn có chắc chắn muốn xóa món này? Hành động này không thể hoàn tác.</h5>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4 text-center">
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <img src="@Model.ImageUrl" class="img-fluid rounded shadow-sm" alt="@Model.Name" style="max-height: 200px" />
+                        }
+                        else
+                        {
+                            <img src="/images/no-image.png" class="img-fluid rounded shadow-sm" alt="No image available" style="max-height: 200px" />
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 30%">Tên món</th>
+                                    <td class="fw-bold fs-5">@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <th>Loại món</th>
+                                    <td><span class="badge bg-info text-dark">@Model.Category?.Name</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Giá bán</th>
+                                    <td class="text-danger fw-bold">@Model.Price.ToString("N0") VNĐ</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <form asp-action="Delete" class="mt-4 border-top pt-3 d-flex justify-content-between">
+                    <input type="hidden" asp-for="Id" />
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Trở về danh sách</a>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Xác nhận xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

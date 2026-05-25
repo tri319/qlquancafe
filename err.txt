@@ -1,0 +1,9 @@
+C:\Users\trin9\source\repos\QLquancafe\Views\Home\Index.cshtml(136,10): error CS0103: The name 'keyframes' does not exist in the current context [C:\Users\trin9\source\repos\QLquancafe\QLquancafe.csproj]
+
+Build FAILED.
+    13 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.52
+
+Workload updates are available. Run `dotnet workload list` for more information.

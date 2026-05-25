@@ -1,0 +1,56 @@
+﻿@model QLquancafe.Models.Product
+
+@{
+    ViewData["Title"] = "Thêm món";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Thêm món ăn mới</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label font-weight-bold">Tên món</label>
+                        <input asp-for="Name" class="form-control" placeholder="Nhập tên món ăn..." />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label font-weight-bold">Loại món</label>
+                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Price" class="form-label font-weight-bold">Giá tiền (VNĐ)</label>
+                        <input asp-for="Price" type="number" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Chọn hình ảnh</label>
+                        <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+                    </div>
+
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                        <button type="submit" class="btn btn-primary px-4">Lưu món</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
