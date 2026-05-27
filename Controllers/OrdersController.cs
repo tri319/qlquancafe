@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using QLquancafe.Data;
 using QLquancafe.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace QLquancafe.Controllers
 {
@@ -10,13 +11,15 @@ namespace QLquancafe.Controllers
     public class OrdersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly Microsoft.AspNetCore.SignalR.IHubContext<QLquancafe.Hubs.NotificationHub> _hubContext;
 
-        public OrdersController(ApplicationDbContext context)
+        public OrdersController(ApplicationDbContext context, Microsoft.AspNetCore.SignalR.IHubContext<QLquancafe.Hubs.NotificationHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
-        // 1. Hiển thị danh sách hóa đơn và thống kê doanh thu
+        // 1. Hiển thị danh sách hóa đơn và thống kê doanh thu (ApexCharts Analytics Dashboard)
         public async Task<IActionResult> Index(string filter = "today")
         {
             var query = _context.Orders
@@ -43,11 +46,80 @@ namespace QLquancafe.Controllers
 
             var orders = await query.OrderByDescending(o => o.OrderDate).ToListAsync();
 
-            // Tính toán thống kê
-            ViewBag.TotalRevenue = orders.Where(o => o.IsPaid).Sum(o => o.TotalAmount);
-            ViewBag.CompletedOrdersCount = orders.Count(o => o.IsPaid);
+            // Tính toán thống kê cơ bản
+            var paidOrders = orders.Where(o => o.IsPaid).ToList();
+            ViewBag.TotalRevenue = paidOrders.Sum(o => o.TotalAmount);
+            ViewBag.CompletedOrdersCount = paidOrders.Count;
             ViewBag.PendingOrdersCount = orders.Count(o => !o.IsPaid);
             ViewBag.CurrentFilter = filter;
+
+            // Phân loại Doanh Thu: Tiền mặt vs VNPAY
+            ViewBag.CashRevenue = paidOrders.Where(o => o.PaymentMethod != "VNPAY").Sum(o => o.TotalAmount);
+            ViewBag.VnPayRevenue = paidOrders.Where(o => o.PaymentMethod == "VNPAY").Sum(o => o.TotalAmount);
+
+            // --- GOM NHÓM DOANH THU THEO TRỤC THỜI GIAN (LINE CHART) ---
+            var chartLabels = new List<string>();
+            var chartValues = new List<decimal>();
+
+            if (filter == "today")
+            {
+                for (int h = 6; h <= 23; h++) // Thời gian hoạt động: 6h sáng đến 23h đêm
+                {
+                    chartLabels.Add($"{h:D2}:00");
+                    var sum = paidOrders.Where(o => o.OrderDate.Hour == h).Sum(o => o.TotalAmount);
+                    chartValues.Add(sum);
+                }
+            }
+            else if (filter == "week")
+            {
+                string[] dayNames = { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật" };
+                int[] dotNetDays = { 1, 2, 3, 4, 5, 6, 0 }; // Sunday = 0, Monday = 1...
+                for (int i = 0; i < 7; i++)
+                {
+                    chartLabels.Add(dayNames[i]);
+                    var sum = paidOrders.Where(o => (int)o.OrderDate.DayOfWeek == dotNetDays[i]).Sum(o => o.TotalAmount);
+                    chartValues.Add(sum);
+                }
+            }
+            else if (filter == "month")
+            {
+                int maxDays = DateTime.DaysInMonth(today.Year, today.Month);
+                for (int d = 1; d <= maxDays; d++)
+                {
+                    chartLabels.Add($"N{d:D2}");
+                    var sum = paidOrders.Where(o => o.OrderDate.Day == d && o.OrderDate.Month == today.Month && o.OrderDate.Year == today.Year).Sum(o => o.TotalAmount);
+                    chartValues.Add(sum);
+                }
+            }
+            else // all
+            {
+                for (int m = 1; m <= 12; m++)
+                {
+                    chartLabels.Add($"Tháng {m}");
+                    var sum = paidOrders.Where(o => o.OrderDate.Month == m && o.OrderDate.Year == today.Year).Sum(o => o.TotalAmount);
+                    chartValues.Add(sum);
+                }
+            }
+
+            ViewBag.ChartLabelsJson = System.Text.Json.JsonSerializer.Serialize(chartLabels);
+            ViewBag.ChartValuesJson = System.Text.Json.JsonSerializer.Serialize(chartValues);
+
+            // --- GOM NHÓM TOP 5 THỨC UỐNG BÁN CHẠY NHẤT (DONUT CHART) ---
+            var paidOrderIds = paidOrders.Select(o => o.Id).ToList();
+            var bestSellersQuery = await _context.OrderDetails
+                .Include(od => od.Product)
+                .Where(od => paidOrderIds.Contains(od.OrderId))
+                .GroupBy(od => od.Product != null ? od.Product.Name : "Món nước khác")
+                .Select(g => new { ProductName = g.Key, TotalQty = g.Sum(od => od.Quantity) })
+                .OrderByDescending(x => x.TotalQty)
+                .Take(5)
+                .ToListAsync();
+
+            var bestSellerNames = bestSellersQuery.Select(x => x.ProductName).ToList();
+            var bestSellerQtys = bestSellersQuery.Select(x => x.TotalQty).ToList();
+
+            ViewBag.BestSellerNamesJson = System.Text.Json.JsonSerializer.Serialize(bestSellerNames);
+            ViewBag.BestSellerQtysJson = System.Text.Json.JsonSerializer.Serialize(bestSellerQtys);
 
             return View(orders);
         }
@@ -167,8 +239,59 @@ namespace QLquancafe.Controllers
 
             if (order.OrderDetails.Count > 0)
             {
-                // Cập nhật lại tổng tiền
-                order.TotalAmount = order.OrderDetails.Sum(d => d.Quantity * d.UnitPrice);
+                // Cập nhật lại tổng tiền gốc
+                decimal originalTotal = order.OrderDetails.Sum(d => d.Quantity * d.UnitPrice);
+
+                // --- TÍCH HỢP HỆ THỐNG THÀNH VIÊN ---
+                var memberId = HttpContext.Session.GetInt32("LinkedMemberId");
+                var redeemedPoints = HttpContext.Session.GetInt32("RedeemedPoints") ?? 0;
+
+                if (memberId.HasValue)
+                {
+                    var customer = await _context.Customers.FindAsync(memberId.Value);
+                    if (customer != null)
+                    {
+                        order.CustomerId = memberId.Value;
+
+                        // Đảm bảo số điểm dùng không lớn hơn số điểm thực tế khách có
+                        if (redeemedPoints > customer.Points)
+                        {
+                            redeemedPoints = customer.Points;
+                        }
+
+                        order.PointsRedeemed = redeemedPoints;
+                        order.DiscountAmount = redeemedPoints * 1000;
+                        order.TotalAmount = Math.Max(0, originalTotal - order.DiscountAmount);
+
+                        // Tính toán điểm tích lũy mới nhận được tạm tính (10.000 đ = 1 điểm)
+                        int basePoints = (int)Math.Floor(order.TotalAmount / 10000);
+                        
+                        // Nhân thêm ưu đãi hạng thành viên
+                        double multiplier = 1.0;
+                        if (customer.Tier == "Silver") multiplier = 1.05;
+                        else if (customer.Tier == "Gold") multiplier = 1.10;
+                        else if (customer.Tier == "Platinum") multiplier = 1.15;
+
+                        order.PointsEarned = (int)Math.Floor(basePoints * multiplier);
+                    }
+                    else
+                    {
+                        order.CustomerId = null;
+                        order.PointsRedeemed = 0;
+                        order.DiscountAmount = 0;
+                        order.PointsEarned = 0;
+                        order.TotalAmount = originalTotal;
+                    }
+                }
+                else
+                {
+                    order.CustomerId = null;
+                    order.PointsRedeemed = 0;
+                    order.DiscountAmount = 0;
+                    order.PointsEarned = 0;
+                    order.TotalAmount = originalTotal;
+                }
+                // ------------------------------------
 
                 if (isNewOrder)
                 {
@@ -187,6 +310,15 @@ namespace QLquancafe.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
+                // Phát tín hiệu SignalR đơn đặt món mới thời gian thực
+                try
+                {
+                    string tableNameStr = table?.TableName ?? ("Bàn " + tableId);
+                    await _hubContext.Clients.All.SendAsync("ReceiveNewOrder", order.Id, tableNameStr);
+                }
+                catch (System.Exception) { /* Lờ đi nếu có lỗi socket */ }
+
                 return RedirectToAction(nameof(Details), new { id = order.Id });
             }
 
@@ -217,11 +349,50 @@ namespace QLquancafe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Pay(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                .FirstOrDefaultAsync(o => o.Id == id);
+                
+            if (order != null && !order.IsPaid)
             {
                 order.IsPaid = true; // Đánh dấu đã trả tiền
                 _context.Update(order);
+
+                // --- CỘNG/TRỪ ĐIỂM TÍCH LŨY THÀNH VIÊN KHI THANH TOÁN THÀNH CÔNG ---
+                if (order.CustomerId.HasValue)
+                {
+                    var customer = await _context.Customers.FindAsync(order.CustomerId.Value);
+                    if (customer != null)
+                    {
+                        // Trừ điểm đã tiêu dùng để giảm giá
+                        customer.Points = Math.Max(0, customer.Points - order.PointsRedeemed);
+
+                        // Cộng điểm thưởng tích lũy mới
+                        customer.Points += order.PointsEarned;
+                        customer.AccumulatedPoints += order.PointsEarned;
+
+                        // Tự động kiểm tra và thăng hạng thành viên
+                        if (customer.AccumulatedPoints >= 1000)
+                        {
+                            customer.Tier = "Platinum";
+                        }
+                        else if (customer.AccumulatedPoints >= 300)
+                        {
+                            customer.Tier = "Gold";
+                        }
+                        else if (customer.AccumulatedPoints >= 100)
+                        {
+                            customer.Tier = "Silver";
+                        }
+                        else
+                        {
+                            customer.Tier = "Bronze";
+                        }
+
+                        _context.Customers.Update(customer);
+                    }
+                }
+                // ----------------------------------------------------------------
 
                 // Cập nhật trạng thái bàn về "Trống"
                 var table = await _context.Tables.FindAsync(order.TableId);
@@ -231,6 +402,26 @@ namespace QLquancafe.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
+                // [KẾT NỐI REAL-TIME] Gửi tín hiệu thông báo đã thanh toán qua SignalR tới tất cả Client.
+                // Khi khách hàng đang mở trang Details.cshtml (xem hóa đơn), trình duyệt của họ sẽ 
+                // nhận được sự kiện này, hiển thị một thông báo thành công đẹp mắt và tự động tải lại 
+                // trang sau 1.5 giây để cập nhật trạng thái "ĐÃ THANH TOÁN" một cách đồng bộ.
+                try
+                {
+                    await _hubContext.Clients.All.SendAsync("ReceiveOrderPaid", order.Id);
+                }
+                catch (System.Exception) { /* Bỏ qua ngoại lệ nếu có sự cố về kết nối socket */ }
+
+                // [XÓA DỮ LIỆU PHIÊN LÀM VIỆC] Giải phóng và dọn sạch Session liên quan đến thông tin 
+                // thành viên của bàn này, đảm bảo lượt khách hàng tiếp theo mở bàn không bị trùng lặp thông tin cũ.
+                HttpContext.Session.Remove("LinkedMemberId");
+                HttpContext.Session.Remove("LinkedMemberPhone");
+                HttpContext.Session.Remove("LinkedMemberName");
+                HttpContext.Session.Remove("LinkedMemberPoints");
+                HttpContext.Session.Remove("LinkedMemberTier");
+                HttpContext.Session.Remove("LinkedMemberAccumulatedPoints");
+                HttpContext.Session.Remove("RedeemedPoints");
             }
 
             // Quay về trang chủ để cập nhật trạng thái bàn trên sơ đồ

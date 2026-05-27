@@ -1,48 +1,64 @@
 @page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Đăng ký";
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = "/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center py-5 animate-fade-up">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm border border-light-subtle rounded-3">
-            <div class="card-body p-4 p-md-5">
+<div class="row justify-content-center py-5">
+    
+    <!-- Cursor Trail Container (Now Global) -->
+
+    <div class="col-md-6 col-lg-5 stagger-item" style="--i: 1;">
+        <div class="card gradient-border-card shadow-hover">
+            <div class="card-body p-4 p-md-5 position-relative" style="z-index: 2;">
                 <div class="text-center mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light mb-3" style="width: 60px; height: 60px; color: var(--cafe-secondary);">
-                        <i class="bi bi-person-plus-fill fs-3"></i>
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--cafe-surface) 0%, var(--cafe-surface-hover) 100%); color: var(--cafe-primary); border: 1px solid rgba(245, 166, 35, 0.2); box-shadow: var(--shadow-neon);">
+                        <i class="bi bi-person-plus-fill fs-2"></i>
                     </div>
-                    <h3 class="fw-bold mb-1" style="color: var(--cafe-primary);">Đăng Ký Tài Khoản</h3>
-                    <p class="text-muted small">Tạo tài khoản mới để đặt món và sử dụng dịch vụ</p>
+                    <h3 class="fw-extrabold mb-1 typewriter-text mx-auto" style="color: var(--cafe-primary); display: inline-block;">ĐĂNG KÝ TÀI KHOẢN</h3>
+                    <p class="text-muted small mt-2">Dành cho nhân viên mới của hệ thống</p>
                 </div>
 
                 <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3" role="alert"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3 fw-bold" role="alert"></div>
                     
                     <div class="form-floating mb-3">
                         <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label asp-for="Input.Email">Tài khoản Email</label>
-                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        <label asp-for="Input.Email" class="form-label">Tài khoản Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger small fw-bold"></span>
                     </div>
                     
                     <div class="form-floating mb-3">
                         <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label asp-for="Input.Password">Mật khẩu</label>
-                        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                        <label asp-for="Input.Password" class="form-label">Mật khẩu bảo mật</label>
+                        <span asp-validation-for="Input.Password" class="text-danger small fw-bold"></span>
                     </div>
-                    
+
                     <div class="form-floating mb-4">
                         <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label asp-for="Input.ConfirmPassword">Xác nhận mật khẩu</label>
-                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                        <label asp-for="Input.ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small fw-bold"></span>
                     </div>
                     
-                    <button id="registerSubmit" type="submit" class="w-100 btn btn-cafe btn-lg shadow-sm">Đăng Ký Tài Khoản <i class="bi bi-check2-circle"></i></button>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 0.5px;">Cấp Quyền Truy Cập</label>
+                        <select name="Input.Role" class="form-select form-select-lg cursor-pointer" style="background-color: var(--cafe-surface-hover); border-color: rgba(245, 166, 35, 0.2);">
+                            <option value="Customer">Khách Hàng (Tạm thời)</option>
+                            <option value="Staff">Nhân Viên Phục Vụ</option>
+                            <option value="Admin">Quản Trị Viên (Admin)</option>
+                        </select>
+                        <div class="form-text mt-2 text-warning small opacity-75"><i class="bi bi-info-circle me-1"></i> Liên hệ Admin sau khi tạo tài khoản để kích hoạt quyền.</div>
+                    </div>
+                    
+                    <div>
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-cafe btn-lg magnetic-btn text-uppercase tracking-wider fw-extrabold">TẠO TÀI KHOẢN <i class="bi bi-check-circle ms-2 fs-5"></i></button>
+                    </div>
                     
                     <div class="text-center mt-4">
                         <p class="mb-0 text-muted small">
                             Đã có tài khoản? 
-                            <a asp-page="./Login" class="fw-bold text-decoration-none" style="color: var(--cafe-primary);">Đăng nhập ngay</a>
+                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold text-decoration-none" style="color: var(--cafe-primary);">Đăng nhập ngay</a>
                         </p>
                     </div>
                 </form>
@@ -53,4 +69,54 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Magnetic Button
+            const magneticBtns = document.querySelectorAll('.magnetic-btn');
+            magneticBtns.forEach(btn => {
+                btn.addEventListener('mousemove', e => {
+                    const rect = btn.getBoundingClientRect();
+                    const h = rect.width / 2;
+                    const x = e.clientX - rect.left - h;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+                });
+                
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.transform = `translate(0px, 0px)`;
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Hide layout sidebar & navbar for login page for a cleaner look */
+        .navbar-sidebar, .customer-top-bar, .customer-bottom-nav {
+            display: none !important;
+        }
+        
+        .main-container {
+            margin-left: 0 !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        main[role="main"] {
+            width: 100%;
+        }
+
+        
+        .transition-base {
+            transition: all 0.3s ease;
+        }
+        .text-cafe-primary-hover:hover {
+            color: var(--cafe-primary) !important;
+            text-shadow: 0 0 10px rgba(245, 166, 35, 0.4);
+        }
+    </style>
 }

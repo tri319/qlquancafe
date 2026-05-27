@@ -4,49 +4,50 @@
     var occupiedTables = ViewBag.OccupiedTables as List<int> ?? new List<int>();
 }
 
-<div class="text-center my-5 animate-fade-up">
-    <h1 class="display-5 fw-extrabold" style="color: var(--cafe-primary); font-weight: 800; letter-spacing: 0.5px;">
+<div class="text-center my-5 stagger-item" style="--i: 1;">
+    <h1 class="display-5 fw-extrabold typewriter-text" style="color: var(--cafe-primary); font-weight: 800; letter-spacing: 0.5px;">
         <i class="bi bi-grid-fill me-2" style="color: var(--cafe-secondary);"></i>SƠ ĐỒ BÀN
     </h1>
     <p class="lead text-muted fw-medium fs-6">Hệ thống quản lý trạng thái bàn thời gian thực trực quan</p>
 </div>
 
-<div class="container animate-fade-up" style="animation-delay: 0.15s;">
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+<div class="container pb-5">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4" id="tableGrid">
+        @{ int index = 2; }
         @foreach (var table in Model)
         {
             bool isBusy = occupiedTables.Contains(table.Id) || table.Status == "Có khách";
 
-            <div class="col">
-                <div class="card h-100 table-card @(isBusy ? "card-busy" : "card-free")">
-                    <div class="card-header text-center border-0 pt-4 pb-0">
-                        <h5 class="fw-bold mb-0 text-uppercase tracking-wider @(isBusy ? "text-white" : "text-dark")" style="font-size: 1.1rem; letter-spacing: 0.5px;">
+            <div class="col stagger-item" style="--i: @index;">
+                <div class="card h-100 table-card tilt-card @(isBusy ? "card-busy gradient-border-card" : "card-free")" data-table-id="@table.Id">
+                    <div class="card-header text-center border-0 pt-4 pb-0" style="z-index: 2;">
+                        <h5 class="fw-bold mb-0 text-uppercase tracking-wider @(isBusy ? "text-dark" : "text-cafe")" style="font-size: 1.1rem; letter-spacing: 0.5px; color: var(--cafe-text);">
                             @table.TableName
                         </h5>
                     </div>
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4" style="z-index: 2;">
                         <div class="mb-3 widget-icon @(isBusy ? "icon-busy" : "icon-free")">
                             @if (isBusy)
                             {
-                                <i class="bi bi-cup-hot-fill"></i>
+                                <i class="bi bi-cup-hot-fill animate-steam text-warning"></i>
                             }
                             else
                             {
-                                <i class="bi bi-circle-dashed text-success-emphasis"></i>
+                                <i class="bi bi-patch-check-fill"></i>
                             }
                         </div>
 
                         <div class="mb-4 text-center">
                             @if (isBusy)
                             {
-                                <span class="badge bg-white text-danger fw-bold rounded-pill px-3 py-2 shadow-sm text-uppercase" style="font-size: 0.75rem;">
-                                    Đang Phục Vụ
+                                <span class="badge bg-danger text-white fw-bold rounded-pill px-3 py-2 shadow-sm text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(255,82,82,0.4) !important;">
+                                    Đang phục vụ
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-success-subtle text-success fw-bold rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.75rem;">
-                                    Bàn Trống
+                                <span class="badge bg-success-subtle text-success fw-bold rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                    Bàn trống
                                 </span>
                             }
                         </div>
@@ -56,19 +57,19 @@
                             {
                                 <div class="d-flex w-100 gap-2">
                                     <a asp-controller="Orders" asp-action="Create" asp-route-tableId="@table.Id"
-                                       class="btn btn-light btn-pill w-50 py-2 border-0 shadow-sm fw-bold" style="font-size: 0.85rem;" title="Gọi thêm món">
-                                        <i class="bi bi-plus-lg"></i> Gọi
+                                       class="btn btn-light btn-pill w-50 py-2 border-0 shadow-sm fw-bold magnetic-btn" style="font-size: 0.85rem;" title="Gọi thêm món">
+                                        <i class="bi bi-plus-lg text-primary"></i> Gọi
                                     </a>
                                     <a asp-controller="Orders" asp-action="ActiveOrder" asp-route-tableId="@table.Id"
-                                       class="btn btn-dark btn-pill w-50 py-2 border-0 shadow-sm fw-bold" style="font-size: 0.85rem;" title="Xem hóa đơn/Thanh toán">
-                                        Bill <i class="bi bi-arrow-right"></i>
+                                       class="btn btn-primary btn-pill w-50 py-2 border-0 shadow-sm fw-bold magnetic-btn" style="font-size: 0.85rem;" title="Xem hóa đơn/Thanh toán">
+                                        Bill <i class="bi bi-arrow-right text-dark ms-1"></i>
                                     </a>
                                 </div>
                             }
                             else
                             {
                                 <a asp-controller="Orders" asp-action="Create" asp-route-tableId="@table.Id"
-                                   class="btn btn-outline-primary btn-pill w-100 py-2 fw-bold" style="font-size: 0.85rem;">
+                                   class="btn btn-outline-success btn-pill w-100 py-2 fw-bold magnetic-btn" style="font-size: 0.85rem;">
                                     <i class="bi bi-door-open-fill me-1"></i> Mở Bàn
                                 </a>
                             }
@@ -76,6 +77,7 @@
                     </div>
                 </div>
             </div>
+            index++;
         }
     </div>
 </div>
@@ -84,85 +86,155 @@
     <style>
         .table-card {
             border-radius: var(--radius-lg);
-            border: 2px solid transparent;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             background: var(--cafe-surface);
+            transform-style: preserve-3d;
         }
 
-        .table-card:hover {
-            transform: translateY(-8px) scale(1.01);
-            z-index: 5;
+        /* 3D Tilt container specific */
+        .tilt-card {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            will-change: transform;
         }
 
         /* Free Table Styling */
         .card-free {
-            border-color: rgba(46, 125, 50, 0.12);
+            border: 2px dashed rgba(0, 230, 118, 0.3);
             box-shadow: var(--shadow-soft);
         }
         .card-free:hover {
-            box-shadow: 0 16px 36px rgba(46, 125, 50, 0.08);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
             border-color: var(--success-color);
+            border-style: solid;
         }
 
-        /* Busy Table Styling - Sunburst gold gradient */
+        /* Busy Table Styling - Handled by gradient-border-card class from site.css */
         .card-busy {
-            background: linear-gradient(135deg, #D84315 0%, #FFB300 100%);
-            border: none;
-            box-shadow: 0 12px 30px rgba(216, 67, 21, 0.22);
-            position: relative;
+            background: var(--cafe-surface);
         }
-        .card-busy::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: var(--radius-lg);
-            box-shadow: 0 0 0 0 rgba(216, 67, 21, 0.45);
-            animation: pulse-ring 2.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: -1;
-            pointer-events: none;
-        }
-        .card-busy .card-header h5 {
-            text-shadow: 0 2px 4px rgba(62, 39, 35, 0.2);
-        }
-
+        
         /* Widget Icon styling */
         .widget-icon {
-            width: 75px;
-            height: 75px;
+            width: 76px;
+            height: 76px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.2rem;
             transition: transform 0.4s ease;
+            transform: translateZ(30px); /* 3D Pop out effect */
         }
         .table-card:hover .widget-icon {
-            transform: rotate(-8deg) scale(1.08);
+            transform: translateZ(40px) scale(1.1);
         }
         
         .icon-free {
             background-color: var(--success-bg);
             color: var(--success-color);
-            border: 1px solid rgba(46, 125, 50, 0.15);
+            border: 1.5px solid rgba(0, 230, 118, 0.2);
         }
         .icon-busy {
-            background-color: rgba(255, 255, 255, 0.22);
-            color: #FFFFFF;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(245, 166, 35, 0.1);
+            color: var(--cafe-primary);
+            border: 1.5px solid rgba(245, 166, 35, 0.3);
+            box-shadow: 0 0 15px rgba(245, 166, 35, 0.2);
         }
 
-        /* Pulsing Glow Animation */
-        @@keyframes pulse-ring {
-            0% {
-                box-shadow: 0 0 0 0 rgba(216, 67, 21, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(216, 67, 21, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(216, 67, 21, 0);
-            }
+        .btn {
+            transform: translateZ(20px); /* 3D Pop out */
+        }
+
+        /* Real-time Service Alert Glowing Effect */
+        .service-alert-pulse {
+            animation: alertGlow 1.2s infinite ease-in-out, alertShake 0.6s infinite ease-in-out;
+            border: 2px solid #ef5350 !important;
+            box-shadow: 0 0 25px rgba(239, 83, 80, 0.6) !important;
+        }
+        
+        @@keyframes alertGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(239, 83, 80, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(239, 83, 80, 0.8), inset 0 0 15px rgba(239, 83, 80, 0.2); }
+        }
+        
+        @@keyframes alertShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(0.8deg); }
+            75% { transform: rotate(-0.8deg); }
         }
     </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // --- HỆ THỐNG LẮNG NGHE SỰ KIỆN SIGNALR REAL-TIME ---
+            $(document).on("onServiceCall", function(e, tableId, tableName) {
+                var $card = $('[data-table-id="' + tableId + '"]');
+                if ($card.length) {
+                    $card.addClass("service-alert-pulse");
+                }
+            });
+
+            $(document).on("onResolveServiceCall", function(e, tableId) {
+                var $card = $('[data-table-id="' + tableId + '"]');
+                if ($card.length) {
+                    $card.removeClass("service-alert-pulse");
+                }
+            });
+
+            $(document).on("onNewOrder", function(e, orderId, tableName) {
+                reloadTableGrid();
+            });
+
+            $(document).on("onWaiterNotification", function(e, orderId, tableName) {
+                reloadTableGrid();
+            });
+
+            function reloadTableGrid() {
+                $.get(window.location.href, function(html) {
+                    var $newGrid = $(html).find('#tableGrid');
+                    if ($newGrid.length) {
+                        $('#tableGrid').replaceWith($newGrid);
+                        setup3DEffects();
+                    }
+                });
+            }
+
+            function setup3DEffects() {
+                const cards = document.querySelectorAll('.tilt-card');
+                cards.forEach(card => {
+                    card.addEventListener('mousemove', e => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = ((y - centerY) / centerY) * -10;
+                        const rotateY = ((x - centerX) / centerX) * 10;
+                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+                    });
+                });
+                
+                const magneticBtns = document.querySelectorAll('.magnetic-btn');
+                magneticBtns.forEach(btn => {
+                    btn.addEventListener('mousemove', e => {
+                        const rect = btn.getBoundingClientRect();
+                        const h = rect.width / 2;
+                        const x = e.clientX - rect.left - h;
+                        const y = e.clientY - rect.top - rect.height / 2;
+                        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) translateZ(20px)`;
+                    });
+                    btn.addEventListener('mouseleave', () => {
+                        btn.style.transform = `translate(0px, 0px) translateZ(20px)`;
+                    });
+                });
+            }
+
+            // Gọi chạy lần đầu tiên
+            setup3DEffects();
+        });
+    </script>
 }

@@ -3,27 +3,36 @@
 @{
     ViewData["Title"] = "Gọi món - Bàn " + ViewBag.TableId;
     Layout = Context.Session.GetInt32("CurrentTableId") != null ? "_CustomerLayout" : "_Layout";
+
+    // --- ĐỌC THÔNG TIN THÀNH VIÊN TỪ SESSION ---
+    var memberId = Context.Session.GetInt32("LinkedMemberId");
+    var memberPhone = Context.Session.GetString("LinkedMemberPhone");
+    var memberName = Context.Session.GetString("LinkedMemberName");
+    var memberPoints = Context.Session.GetInt32("LinkedMemberPoints") ?? 0;
+    var memberTier = Context.Session.GetString("LinkedMemberTier") ?? "Bronze";
+    var redeemedPoints = Context.Session.GetInt32("RedeemedPoints") ?? 0;
+    var memberAccumulatedPoints = Context.Session.GetInt32("LinkedMemberAccumulatedPoints") ?? 0;
 }
 
-<div class="container py-4 animate-fade-up">
+<div class="container py-4">
     <!-- Header Area -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-5">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-5 stagger-item" style="--i: 1;">
         <div>
             <span class="text-uppercase tracking-wider text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1.5px;">Hệ Thống Đặt Món</span>
-            <h2 class="fw-extrabold mb-0" style="color: var(--cafe-primary); font-weight: 800;">
-                <i class="bi bi-cart-plus-fill text-warning me-2 fs-3"></i> BÀN PHỤC VỤ #@ViewBag.TableId
+            <h2 class="fw-extrabold mb-0 typewriter-text" style="color: var(--cafe-primary); font-weight: 800;">
+                <i class="bi bi-cart-plus-fill text-warning me-2 fs-3"></i> BÀN #@ViewBag.TableId
             </h2>
         </div>
         
         @if (Context.Session.GetInt32("CurrentTableId") != null)
         {
-            <a asp-controller="Client" asp-action="LeaveTable" class="btn btn-outline-danger btn-pill btn-sm py-2">
+            <a asp-controller="Client" asp-action="LeaveTable" class="btn btn-outline-danger btn-pill btn-sm py-2 magnetic-btn">
                 <i class="bi bi-box-arrow-right"></i> Rời bàn & Thoát
             </a>
         }
         else
         {
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-pill btn-sm py-2">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-pill btn-sm py-2 magnetic-btn">
                 <i class="bi bi-arrow-left"></i> Sơ đồ bàn
             </a>
         }
@@ -31,73 +40,178 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4 stagger-item" style="--i: 2;" role="alert">
             <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"></i>
             <strong>Lỗi!</strong> @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-        <!-- Quảng Cáo & Khuyến Mãi (Advertising Carousel) -->
-        <div id="promoCarousel" class="carousel slide mb-5 rounded-4 shadow overflow-hidden animate-fade-up" data-bs-ride="carousel" style="animation-delay: 0.05s;">
-            <div class="carousel-indicators">
-                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-            </div>
-            <div class="carousel-inner">
-                <!-- Slide 1: Khuyến Mãi đặc biệt với ảnh nền thực tế -->
-                <div class="carousel-item active">
-                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(45, 26, 18, 0.75), rgba(45, 26, 18, 0.75)), url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
-                        <div class="promo-content text-start">
-                            <span class="badge bg-warning text-dark text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Khuyến Mãi Đặc Biệt</span>
-                            <h3 class="fw-bold fs-1 mb-2 text-warning">GIẢM 15% CHO ĐƠN TẠI BÀN</h3>
-                            <p class="mb-0 text-white-50 fs-6">Nhập mã bàn của bạn và bắt đầu gọi món trực tuyến để nhận ưu đãi ngay hôm nay!</p>
-                        </div>
-                        <div class="promo-icon d-none d-md-block ms-4">
-                            <i class="bi bi-gift fs-1 text-warning opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Slide 2: Món mới với ảnh nền latte mật ong ngọt ngào -->
-                <div class="carousel-item">
-                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(239, 108, 0, 0.7), rgba(239, 108, 0, 0.7)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
-                        <div class="promo-content text-start">
-                            <span class="badge bg-white text-dark text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Món Mới Tuần Này</span>
-                            <h3 class="fw-bold fs-1 mb-2 text-white">GOLDEN HONEY LATTE</h3>
-                            <p class="mb-0 text-white-50 fs-6">Sự pha trộn ngọt ngào giữa mật ong tự nhiên nguyên chất và cà phê Arabica hảo hạng.</p>
-                        </div>
-                        <div class="promo-icon d-none d-md-block ms-4">
-                            <i class="bi bi-cup-hot fs-1 text-white opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Slide 3: Thanh toán với ảnh nền thanh toán tiện lợi -->
-                <div class="carousel-item">
-                    <div class="promo-slide d-flex align-items-center justify-content-between p-4 p-md-5 text-white" style="background: linear-gradient(rgba(21, 101, 192, 0.75), rgba(21, 101, 192, 0.75)), url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80') no-repeat center center; background-size: cover; min-height: 220px;">
-                        <div class="promo-content text-start">
-                            <span class="badge bg-info text-white text-uppercase fw-bold mb-2" style="font-size: 0.8rem; letter-spacing: 1px;">Thanh Toán Tiện Lợi</span>
-                            <h3 class="fw-bold fs-1 mb-2 text-info-emphasis">QUÉT MÃ VNPAY NHANH CHÓNG</h3>
-                            <p class="mb-0 text-white-50 fs-6">Hỗ trợ thanh toán bảo mật bằng ứng dụng ngân hàng ngay tại bàn không cần chờ đợi!</p>
-                        </div>
-                        <div class="promo-icon d-none d-md-block ms-4">
-                            <i class="bi bi-qr-code-scan fs-1 text-white opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+    <!-- Ads Carousel -->
+    <div id="promoCarousel" class="carousel slide mb-4 stagger-item" data-bs-ride="carousel" style="--i: 2.5; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(245, 166, 35, 0.2);">
+        <div class="carousel-indicators" style="margin-bottom: 1rem;">
+            <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="0" class="active" aria-current="true" style="width: 30px; height: 5px; border-radius: 5px; background-color: var(--cafe-primary);"></button>
+            <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="1" style="width: 30px; height: 5px; border-radius: 5px; background-color: rgba(255,255,255,0.5);"></button>
+            <button type="button" data-bs-target="#promoCarousel" data-bs-slide-to="2" style="width: 30px; height: 5px; border-radius: 5px; background-color: rgba(255,255,255,0.5);"></button>
         </div>
+        <div class="carousel-inner">
+            <!-- Promo 1 -->
+            <div class="carousel-item active" style="height: 220px; background: linear-gradient(135deg, #1A1A1A 0%, #3a1a00 100%);">
+                <div class="d-flex h-100 align-items-center px-4 px-md-5 position-relative">
+                    <i class="bi bi-stars position-absolute" style="color: var(--cafe-primary); font-size: 10rem; right: -20px; bottom: -30px; opacity: 0.15; transform: rotate(-15deg);"></i>
+                    <div class="z-1">
+                        <span class="badge bg-danger mb-2 shadow px-3 py-2" style="font-size: 0.9rem; letter-spacing: 1px;"><i class="bi bi-fire"></i> HOT DEAL TẦM CỠ</span>
+                        <h2 class="fw-extrabold text-white mb-2" style="text-shadow: 0 4px 10px rgba(0,0,0,0.8); font-size: 2.2rem; line-height: 1.1;">Happy Hour<br><span style="color: var(--cafe-primary);">Giảm 20%</span></h2>
+                        <p class="text-white-75 mb-0" style="font-size: 1.1rem; font-weight: 500;">Áp dụng cho mọi loại Trà Sữa (14h-16h)</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Promo 2 -->
+            <div class="carousel-item" style="height: 220px; background: linear-gradient(135deg, #0D0D0D 0%, #1a1500 100%);">
+                <div class="d-flex h-100 align-items-center px-4 px-md-5 position-relative">
+                    <i class="bi bi-cup-hot-fill position-absolute" style="color: var(--cafe-accent); font-size: 9rem; right: 0px; bottom: -20px; opacity: 0.15; transform: rotate(10deg);"></i>
+                    <div class="z-1">
+                        <span class="badge mb-2 shadow px-3 py-2 text-dark" style="background-color: var(--cafe-primary); font-size: 0.9rem; letter-spacing: 1px;"><i class="bi bi-stars"></i> SIÊU PHẨM MỚI</span>
+                        <h2 class="fw-extrabold text-white mb-2" style="text-shadow: 0 4px 10px rgba(0,0,0,0.8); font-size: 2.2rem; line-height: 1.1;">Cà Phê Muối<br><span style="color: var(--cafe-accent);">Trân Châu</span></h2>
+                        <p class="text-white-75 mb-0" style="font-size: 1.1rem; font-weight: 500;">Sự kết hợp bùng nổ mọi giác quan</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Promo 3 -->
+            <div class="carousel-item" style="height: 220px; background: linear-gradient(135deg, #0f1c15 0%, #000000 100%);">
+                <div class="d-flex h-100 align-items-center px-4 px-md-5 position-relative">
+                    <i class="bi bi-gift-fill position-absolute text-success" style="font-size: 9rem; right: -10px; bottom: -20px; opacity: 0.15; transform: rotate(-10deg);"></i>
+                    <div class="z-1">
+                        <span class="badge bg-success mb-2 shadow px-3 py-2" style="font-size: 0.9rem; letter-spacing: 1px;"><i class="bi bi-check-circle-fill"></i> ƯU ĐÃI KHỦNG</span>
+                        <h2 class="fw-extrabold text-white mb-2" style="text-shadow: 0 4px 10px rgba(0,0,0,0.8); font-size: 2.2rem; line-height: 1.1;">Mua Size L<br><span style="color: #00e676;">Tặng Kèm Bánh</span></h2>
+                        <p class="text-white-75 mb-0" style="font-size: 1.1rem; font-weight: 500;">Tặng 1 Cookie bơ thơm lừng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loyalty & Membership Program Section -->
+    <div class="loyalty-wrapper p-4 mb-4 stagger-item" style="--i: 2.7;">
+        <div id="loyalty-unlinked" class="@(memberId.HasValue ? "d-none" : "")">
+            <div class="d-flex justify-content-center mb-4">
+                <div class="member-tabs">
+                    <button type="button" id="tabLink" class="member-tab-btn active">
+                        <i class="bi bi-link-45deg me-1"></i> Đã Có Tài Khoản
+                    </button>
+                    <button type="button" id="tabRegister" class="member-tab-btn">
+                        <i class="bi bi-person-plus-fill me-1"></i> Đăng Ký Mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab: Liên kết tài khoản (Đã có thành viên) -->
+            <div id="panelLink" class="member-tab-panel">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-6 text-start">
+                        <span class="badge bg-warning-subtle text-warning fw-bold px-3 py-2 text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-gift-fill me-1"></i> Chương Trình Thành Viên
+                        </span>
+                        <h4 class="fw-extrabold text-white mb-2" style="font-weight: 800;">LIÊN KẾT TÀI KHOẢN 💳</h4>
+                        <p class="text-muted mb-0 small">Nhập số điện thoại của bạn để liên kết tài khoản thành viên hiện có, tích lũy điểm thưởng và nhận ưu đãi giảm giá ngay!</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="input-group">
+                            <input type="tel" id="linkPhoneInput" class="form-control btn-pill px-4" placeholder="Nhập số điện thoại..." style="border-radius: var(--radius-pill) 0 0 var(--radius-pill) !important;">
+                            <button type="button" id="btnLinkMember" class="btn btn-cafe btn-pill px-4 magnetic-btn" style="border-radius: 0 var(--radius-pill) var(--radius-pill) 0 !important; z-index: 10;">
+                                <span id="btnLinkText"><i class="bi bi-link-45deg"></i> Liên Kết</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Đăng ký mới (Chưa có tài khoản) -->
+            <div id="panelRegister" class="member-tab-panel d-none">
+                <div class="row align-items-center g-3">
+                    <div class="col-lg-5 text-start">
+                        <span class="badge bg-danger-subtle text-danger fw-bold px-3 py-2 text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-person-plus-fill me-1"></i> Thành Viên Mới
+                        </span>
+                        <h4 class="fw-extrabold text-white mb-2" style="font-weight: 800;">ĐĂNG KÝ THÀNH VIÊN 🌟</h4>
+                        <p class="text-muted mb-0 small">Đăng ký thành viên mới để nhận ngay 1 điểm cho mỗi 10.000 đ thanh toán, thăng hạng VIP và quy đổi điểm giảm giá hóa đơn!</p>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="row g-2">
+                            <div class="col-sm-6">
+                                <input type="tel" id="registerPhoneInput" class="form-control btn-pill px-4" placeholder="Số điện thoại của bạn..." style="height: 48px;">
+                            </div>
+                            <div class="col-sm-6 d-flex gap-2">
+                                <input type="text" id="registerNameInput" class="form-control btn-pill px-4" placeholder="Họ & Tên của bạn..." style="height: 48px;">
+                                <button type="button" id="btnRegisterMember" class="btn btn-cafe btn-pill px-4 text-nowrap magnetic-btn" style="height: 48px;">
+                                    <span id="btnRegisterText"><i class="bi bi-check-lg"></i> Đăng Ký</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loyalty-linked" class="@(!memberId.HasValue ? "d-none" : "")">
+            <div class="row align-items-center g-4">
+                <div class="col-md-5">
+                    <!-- 3D Holographic Membership Card -->
+                    @{
+                        string cardClass = "card-bronze";
+                        string tierLabel = "ĐỒNG";
+                        if (memberTier == "Silver") { cardClass = "card-silver"; tierLabel = "BẠC"; }
+                        else if (memberTier == "Gold") { cardClass = "card-gold"; tierLabel = "VÀNG"; }
+                        else if (memberTier == "Platinum") { cardClass = "card-platinum"; tierLabel = "KIM CƯƠNG"; }
+                    }
+                    <div class="membership-card @cardClass" id="memberCard3D" style="transform-style: preserve-3d; transition: transform 0.1s ease;">
+                        <div class="card-hologram-shine" id="cardShine"></div>
+                        <div class="d-flex justify-content-between align-items-center" style="z-index: 5;">
+                            <span class="card-logo"><i class="bi bi-cup-hot-fill me-1"></i> QL CAFE</span>
+                            <span class="card-tier-label" id="cardTierName">@tierLabel MEMBER</span>
+                        </div>
+                        <div class="card-chip my-2" style="z-index: 5; transform: translateZ(20px);"></div>
+                        <div style="z-index: 5; transform: translateZ(15px);">
+                            <div class="card-number mb-2" id="cardPhoneNumber">@memberPhone</div>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div>
+                                    <div class="small opacity-75" style="font-size: 0.65rem; letter-spacing: 0.5px;">HỌ VÀ TÊN</div>
+                                    <div class="card-name" id="cardMemberName">@memberName</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="points-badge">
+                                        <i class="bi bi-stars"></i> <span id="cardPointsVal">@memberPoints</span> điểm
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-7 text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h4 class="fw-extrabold text-white mb-0" style="font-weight: 800;">XIN CHÀO, <span id="memberDisplayName" class="text-warning">@memberName</span>!</h4>
+                        <button type="button" id="btnUnlinkMember" class="btn btn-outline-danger btn-pill btn-sm py-1 px-3" style="font-size: 0.78rem;">
+                            <i class="bi bi-box-arrow-right"></i> Hủy liên kết
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-3">Tài khoản thành viên đã được liên kết thành công với E-Menu bàn của bạn. Bạn đã sẵn sàng tích điểm và đổi ưu đãi giảm giá.</p>
+                    
+                    <!-- Progress Bar for Tier -->
+                    <div class="mb-2 d-flex justify-content-between align-items-center small text-muted">
+                        <span>Hạng hiện tại: <strong id="lblCurrentTier" class="text-light">@tierLabel</strong></span>
+                        <span id="lblTierProgress">Cần tích lũy để thăng hạng</span>
+                    </div>
+                    <div class="glow-progress-wrapper mb-2">
+                        <div class="glow-progress-bar" id="tierProgressBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Search & Filter Category Section -->
-    <div class="search-filter-wrapper mb-5 p-3 rounded-4 bg-white shadow-sm border animate-fade-up" style="animation-delay: 0.1s;">
+    <div class="search-filter-wrapper mb-5 p-3 bg-white shadow-sm border stagger-item" style="--i: 3;">
         <!-- Search bar -->
         <div class="position-relative mb-2">
             <input type="text" id="searchInput" class="form-control form-control-lg btn-pill px-4 ps-5" placeholder="Tìm kiếm món ăn ngon tại đây...">
@@ -105,7 +219,15 @@
         </div>
         
         <!-- Category Pills (Horizontal scrollable) -->
-        <div class="category-scroll-container">
+        <div class="category-scroll-container skeleton-container">
+            <!-- Skeleton for loading categories -->
+            <div class="skeleton-pill skeleton"></div>
+            <div class="skeleton-pill skeleton"></div>
+            <div class="skeleton-pill skeleton"></div>
+            <div class="skeleton-pill skeleton"></div>
+        </div>
+        
+        <div class="category-scroll-container actual-categories d-none">
             <button type="button" class="btn btn-filter active-pill btn-cafe" data-category="All">Tất cả</button>
             @foreach (var cat in Model.Select(p => p.Category?.Name).Where(c => !string.IsNullOrEmpty(c)).Distinct())
             {
@@ -119,22 +241,37 @@
 
         <!-- Products Grouped by Category -->
         <div id="productList">
+            @{ int groupIndex = 4; }
             @foreach (var group in Model.GroupBy(p => p.Category?.Name ?? "Món Khác").OrderBy(g => g.Key))
             {
-                <div class="category-section mb-5 animate-fade-up" data-category="@group.Key">
-                    <h3 class="fw-bold mb-4 pb-2 border-bottom text-uppercase d-flex align-items-center justify-content-between" style="color: var(--cafe-primary); border-color: rgba(141, 110, 99, 0.15) !important;">
+                <div class="category-section mb-5 stagger-item" style="--i: @groupIndex;" data-category="@group.Key">
+                    <h3 class="fw-bold mb-4 pb-2 border-bottom text-uppercase d-flex align-items-center justify-content-between" style="color: var(--cafe-primary); border-color: rgba(245, 166, 35, 0.15) !important;">
                         <span>
                             <i class="bi bi-tag-fill text-warning me-2"></i> @group.Key
                         </span>
                         <span class="badge bg-secondary-subtle text-secondary rounded-pill font-monospace fw-normal" style="font-size: 0.85rem;">@group.Count() món</span>
                     </h3>
-                    <div class="row g-4">
+                    <div class="row g-4 product-grid">
+                        <!-- Skeleton loading for products (visible initially) -->
+                        <div class="col-6 col-md-4 col-lg-3 product-skeleton-item">
+                            <div class="card h-100 product-card" style="border: none;">
+                                <div class="card-image-container skeleton"></div>
+                                <div class="card-body p-3">
+                                    <div class="skeleton mb-2" style="height: 24px; width: 80%;"></div>
+                                    <div class="skeleton mb-4" style="height: 20px; width: 50%;"></div>
+                                    <div class="skeleton mb-2" style="height: 40px; width: 100%;"></div>
+                                    <div class="skeleton mb-3" style="height: 40px; width: 100%;"></div>
+                                    <div class="skeleton" style="height: 38px; width: 100%; border-radius: 50px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actual Products (hidden initially, shown via JS) -->
                         @foreach (var item in group)
                         {
-                            <div class="col-6 col-md-4 col-lg-3 product-item" data-name="@item.Name.ToLower()" data-category="@group.Key">
-                                <div class="card h-100 product-card card-hover d-flex flex-column">
+                            <div class="col-6 col-md-4 col-lg-3 product-item d-none" data-name="@item.Name.ToLower()" data-category="@group.Key">
+                                <div class="card h-100 product-card card-hover d-flex flex-column tilt-card">
                                     <div class="position-relative overflow-hidden card-image-container">
-                                        @* Nổi bật các nhãn Bán chạy / Mới nhất cho thực đơn thêm hấp dẫn *@
                                         @if (item.Id % 3 == 0)
                                         {
                                             <span class="position-absolute top-0 start-0 m-3 badge bg-danger text-white rounded-pill px-3 py-2 shadow-sm font-monospace text-uppercase" style="z-index: 10; font-size: 0.75rem; letter-spacing: 0.5px;">
@@ -162,8 +299,8 @@
                                     </div>
                                     
                                     <div class="card-body text-center d-flex flex-column p-3">
-                                        <h5 class="fw-extrabold mb-1 text-dark text-wrap" style="min-height: 3.4rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; font-size: 1.32rem !important; font-weight: 800;" title="@item.Name">@item.Name</h5>
-                                        <p class="text-danger fw-extrabold mb-3" style="font-size: 1.45rem !important; letter-spacing: 0.5px;">@item.Price.ToString("N0") đ</p>
+                                        <h5 class="fw-extrabold mb-1 text-wrap" style="color: var(--cafe-text); min-height: 3.4rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; font-size: 1.25rem !important; font-weight: 800;" title="@item.Name">@item.Name</h5>
+                                        <p class="text-danger fw-extrabold mb-3" style="font-size: 1.35rem !important; letter-spacing: 0.5px;">@item.Price.ToString("N0") đ</p>
 
                                         <input type="hidden" name="productIds" value="@item.Id" />
                                          
@@ -185,22 +322,16 @@
                                         @if (isSoftDrink)
                                         {
                                             <div style="display: none;">
-                                                <select name="sizes">
-                                                    <option value="" selected></option>
-                                                </select>
-                                                <select name="sugarLevels">
-                                                    <option value="" selected></option>
-                                                </select>
-                                                <select name="iceLevels">
-                                                    <option value="" selected></option>
-                                                </select>
+                                                <select name="sizes"><option value="" selected></option></select>
+                                                <select name="sugarLevels"><option value="" selected></option></select>
+                                                <select name="iceLevels"><option value="" selected></option></select>
                                             </div>
                                         }
                                         else
                                         {
                                             <div class="mb-2 text-start">
-                                                <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Kích thước</label>
-                                                <select name="sizes" class="form-select form-select-lg fw-bold text-dark border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                <label class="text-muted fw-bold mb-1" style="font-size: 0.9rem; letter-spacing: 0.5px;">Kích thước</label>
+                                                <select name="sizes" class="form-select form-select-sm fw-bold border-light-subtle shadow-none">
                                                     <option value="M">Size M</option>
                                                     <option value="L">Size L (+10.000 đ)</option>
                                                 </select>
@@ -208,8 +339,8 @@
                                             
                                             <div class="row g-2 mb-3 text-start">
                                                 <div class="col-6">
-                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Đường</label>
-                                                    <select name="sugarLevels" class="form-select form-select-lg fw-bold border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.9rem; letter-spacing: 0.5px;">Đường</label>
+                                                    <select name="sugarLevels" class="form-select form-select-sm fw-bold border-light-subtle shadow-none">
                                                         <option value="100%">100%</option>
                                                         <option value="70%">70%</option>
                                                         <option value="50%" selected>50%</option>
@@ -218,8 +349,8 @@
                                                     </select>
                                                 </div>
                                                 <div class="col-6">
-                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">Đá</label>
-                                                    <select name="iceLevels" class="form-select form-select-lg fw-bold border-light-subtle shadow-none py-2" style="font-size: 1.05rem; background-color: var(--cafe-light);">
+                                                    <label class="text-muted fw-bold mb-1" style="font-size: 0.9rem; letter-spacing: 0.5px;">Đá</label>
+                                                    <select name="iceLevels" class="form-select form-select-sm fw-bold border-light-subtle shadow-none">
                                                         <option value="100%">100%</option>
                                                         <option value="70%">70%</option>
                                                         <option value="50%" selected>50%</option>
@@ -231,12 +362,12 @@
                                          
                                         <!-- Qty Counter -->
                                         <div class="input-group input-group-sm mt-auto justify-content-center qty-group bg-light rounded-pill p-1">
-                                            <button type="button" class="btn btn-light rounded-circle btn-minus d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; padding: 0;">
+                                            <button type="button" class="btn rounded-circle btn-minus d-flex align-items-center justify-content-center shadow-sm">
                                                 <i class="bi bi-dash fs-6"></i>
                                             </button>
                                             <input type="number" name="quantities" value="0" min="0"
-                                                   class="form-control text-center qty-input mx-1 border-0 bg-transparent fw-bold fs-6 shadow-none" style="max-width: 45px;" data-price="@item.Price" />
-                                            <button type="button" class="btn btn-cafe rounded-circle btn-plus d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; padding: 0;">
+                                                   class="form-control text-center qty-input mx-1 border-0 bg-transparent fw-bold fs-6 shadow-none" style="max-width: 45px; color: var(--cafe-text);" data-price="@item.Price" />
+                                            <button type="button" class="btn btn-cafe rounded-circle btn-plus d-flex align-items-center justify-content-center shadow-sm">
                                                 <i class="bi bi-plus fs-6"></i>
                                             </button>
                                         </div>
@@ -246,11 +377,12 @@
                         }
                     </div>
                 </div>
+                groupIndex++;
             }
         </div>
 
         <!-- No Products Found Message -->
-        <div id="noProductsMessage" class="text-center py-5 d-none animate-fade-up">
+        <div id="noProductsMessage" class="text-center py-5 d-none">
             <i class="bi bi-search text-muted display-1"></i>
             <h4 class="mt-3 fw-bold text-muted">Không tìm thấy món ăn nào</h4>
             <p class="text-muted">Vui lòng thử tìm với từ khóa khác.</p>
@@ -260,15 +392,35 @@
         <div style="height: 120px;"></div>
 
         <!-- Floating Glass checkout tray -->
-        <div class="fixed-bottom glass-panel border-top p-3 shadow-lg tray-float" style="z-index: 1000; border-radius: var(--radius-md) var(--radius-md) 0 0;">
-            <div class="container d-flex justify-content-between align-items-center">
-                <div class="text-start">
-                    <span class="fw-bold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 1.5px; color: var(--cafe-text-muted);">Tổng Tạm Tính</span>
-                    <h3 class="text-danger fw-extrabold mb-0 fs-2" id="liveTotalAmount">0 đ</h3>
+        <div class="glass-panel border-top p-3 shadow-lg tray-float" style="border-radius: var(--radius-md) var(--radius-md) 0 0;">
+            <div class="container">
+                <!-- Loyalty Points Redeem Area inside Tray -->
+                <div id="trayLoyaltyRedeem" class="mb-3 border-bottom pb-2 d-none">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="text-start">
+                            <span class="text-light fw-bold small"><i class="bi bi-stars text-warning me-1"></i> Sử dụng điểm tích lũy đổi giảm giá:</span>
+                            <span class="text-muted small d-block">Bạn có <strong class="text-warning" id="lblTrayAvailablePoints">@memberPoints</strong> điểm. Đổi 1 điểm = 1.000 đ giảm giá.</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="number" id="inputRedeemPoints" class="form-control form-control-sm text-center fw-bold" style="width: 80px; background-color: var(--cafe-bg); color: var(--cafe-text); border: 1px solid rgba(245, 166, 35, 0.2);" min="0" max="@memberPoints" value="@redeemedPoints" />
+                            <button type="button" id="btnApplyRedeem" class="btn btn-sm btn-cafe fw-bold px-3">Áp Dụng</button>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-cafe btn-pill btn-lg px-5 shadow-lg d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                    <i class="bi bi-check2-circle fs-5"></i> XÁC NHẬN MÓN
-                </button>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-start">
+                        <span class="fw-bold d-block text-uppercase" style="font-size: 0.75rem; letter-spacing: 1.5px; color: var(--cafe-text-muted);">Tổng Thanh Toán</span>
+                        <div class="d-flex align-items-baseline gap-2">
+                            <h3 class="text-danger fw-extrabold mb-0 fs-2 font-monospace" id="liveTotalAmount">0 đ</h3>
+                            <span class="text-muted small text-decoration-line-through d-none" id="lblOriginalTotal">0 đ</span>
+                        </div>
+                        <span class="badge bg-success-subtle text-success small d-none" id="lblDiscountBadge">Giảm 0 đ</span>
+                    </div>
+                    <button type="submit" form="orderForm" class="btn btn-cafe btn-pill btn-lg px-5 shadow-lg d-flex align-items-center gap-2 magnetic-btn" style="font-size: 1.05rem;">
+                        <i class="bi bi-check2-circle fs-5"></i> XÁC NHẬN MÓN
+                    </button>
+                </div>
             </div>
         </div>
     </form>
@@ -277,30 +429,445 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // --- HỆ THỐNG THÀNH VIÊN VÀ ĐIỂM THƯỞNG JAVASCRIPT ---
+            var isMemberLinked = @(memberId.HasValue ? "true" : "false");
+            var memberPoints = @memberPoints;
+            var redeemedPoints = @redeemedPoints;
+            var memberTier = "@memberTier";
 
+            // Hiệu ứng nghiêng 3D của Thẻ thành viên kèm ánh phản chiếu Hologram
+            function setupCard3DEffect() {
+                const card = document.getElementById('memberCard3D');
+                const shine = document.getElementById('cardShine');
+                if (!card) return;
+
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left; // x position within the element.
+                    const y = e.clientY - rect.top;  // y position within the element.
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -12; // Max rotation 12deg
+                    const rotateY = ((x - centerX) / centerX) * 12;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+                    
+                    // Di chuyển luồng sáng phản chiếu của Hologram theo góc nghiêng chuột
+                    const shineX = (x / rect.width) * 100;
+                    const shineY = (y / rect.height) * 100;
+                    shine.style.background = `radial-gradient(circle at ${shineX}% ${shineY}%, rgba(255,255,255,0.25) 0%, transparent 60%)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+                    shine.style.background = `radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 60%)`;
+                });
+            }
+
+            // Đồng bộ thanh tiến trình thăng hạng
+            function updateTierProgress(points, tier) {
+                var nextTarget = 100;
+                var prevTarget = 0;
+                var currentTierName = "Đồng";
+                var nextTierName = "Bạc";
+                
+                if (tier === "Silver") {
+                    prevTarget = 100;
+                    nextTarget = 300;
+                    currentTierName = "Bạc";
+                    nextTierName = "Vàng";
+                } else if (tier === "Gold") {
+                    prevTarget = 300;
+                    nextTarget = 1000;
+                    currentTierName = "Vàng";
+                    nextTierName = "Kim Cương";
+                } else if (tier === "Platinum") {
+                    prevTarget = 1000;
+                    nextTarget = 1000;
+                    currentTierName = "Kim Cương";
+                    nextTierName = "Tối đa";
+                }
+
+                $("#lblCurrentTier").text(currentTierName);
+
+                if (tier === "Platinum") {
+                    $("#lblTierProgress").text("Bạn đã đạt cấp độ thành viên cao nhất! 🎉");
+                    $("#tierProgressBar").css("width", "100%");
+                } else {
+                    var needed = nextTarget - points;
+                    if (needed < 0) needed = 0;
+                    $("#lblTierProgress").text("Cần thêm " + needed + " điểm để lên hạng " + nextTierName);
+                    
+                    var range = nextTarget - prevTarget;
+                    var currentProgress = points - prevTarget;
+                    if (currentProgress < 0) currentProgress = 0;
+                    var percent = (currentProgress / range) * 100;
+                    if (percent > 100) percent = 100;
+                    
+                    $("#tierProgressBar").css("width", percent + "%");
+                }
+            }
+
+            // Gọi đồng bộ lúc khởi động nếu đã liên kết
+            if (isMemberLinked) {
+                setupCard3DEffect();
+                var accumulated = @memberAccumulatedPoints;
+                updateTierProgress(accumulated, memberTier);
+            }
+
+            // Chuyển đổi qua lại giữa 2 tab Đăng ký và Liên kết thành viên
+            $("#tabLink").click(function() {
+                $(".member-tab-btn").removeClass("active");
+                $(this).addClass("active");
+                $("#panelRegister").addClass("d-none");
+                $("#panelLink").removeClass("d-none");
+            });
+
+            $("#tabRegister").click(function() {
+                $(".member-tab-btn").removeClass("active");
+                $(this).addClass("active");
+                $("#panelLink").addClass("d-none");
+                $("#panelRegister").removeClass("d-none");
+            });
+
+            // AJAX: Liên kết thành viên khi bấm nút (Chỉ cần Số điện thoại)
+            $("#btnLinkMember").click(function() {
+                var phone = $("#linkPhoneInput").val();
+                
+                if (!phone) {
+                    showToast("⚠️ Vui lòng nhập số điện thoại để liên kết!", "warning");
+                    return;
+                }
+
+                // Thực hiện gửi AJAX liên kết
+                $("#btnLinkMember").prop("disabled", true);
+                $("#btnLinkText").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...');
+
+                $.ajax({
+                    url: '/Client/LinkMember',
+                    type: 'POST',
+                    data: { phone: phone },
+                    success: function(res) {
+                        $("#btnLinkMember").prop("disabled", false);
+                        if (res.success) {
+                            showToast("🌟 Liên kết thành viên thành công! Xin chào " + res.name, "success");
+                            
+                            // Cập nhật biến toàn cục
+                            isMemberLinked = true;
+                            memberPoints = res.points;
+                            memberTier = res.tier;
+                            redeemedPoints = 0;
+
+                            // Cập nhật UI
+                            $("#loyalty-unlinked").addClass("d-none");
+                            $("#loyalty-linked").removeClass("d-none");
+                            
+                            // Thiết lập thẻ thành viên 3D
+                            $("#cardMemberName").text(res.name);
+                            $("#cardPhoneNumber").text(res.phone);
+                            $("#cardPointsVal").text(res.points);
+                            $("#memberDisplayName").text(res.name);
+                            
+                            var cardClass = "card-bronze";
+                            var tierLbl = "ĐỒNG";
+                            if (res.tier === "Silver") { cardClass = "card-silver"; tierLbl = "BẠC"; }
+                            else if (res.tier === "Gold") { cardClass = "card-gold"; tierLbl = "VÀNG"; }
+                            else if (res.tier === "Platinum") { cardClass = "card-platinum"; tierLbl = "KIM CƯƠNG"; }
+                            
+                            $("#memberCard3D").removeClass("card-bronze card-silver card-gold card-platinum").addClass(cardClass);
+                            $("#cardTierName").text(tierLbl + " MEMBER");
+
+                            // Cập nhật thanh tiến trình thăng hạng
+                            updateTierProgress(res.accumulatedPoints, res.tier);
+                            setupCard3DEffect();
+
+                            // Cập nhật tray thanh toán
+                            $("#lblTrayAvailablePoints").text(res.points);
+                            $("#inputRedeemPoints").attr("max", res.points).val(0);
+                            
+                            updateTotal();
+                        } else {
+                            showToast("❌ " + res.message, "danger");
+                            $("#btnLinkText").html('<i class="bi bi-link-45deg"></i> Liên Kết');
+                            
+                            // Tự động chuyển hướng khách sang Tab Đăng Ký nếu chưa có tài khoản
+                            if (res.message.indexOf("chưa được đăng ký") > -1) {
+                                $("#tabRegister").click();
+                                $("#registerPhoneInput").val(phone);
+                                $("#registerNameInput").focus();
+                            }
+                        }
+                    },
+                    error: function() {
+                        $("#btnLinkMember").prop("disabled", false);
+                        $("#btnLinkText").html('<i class="bi bi-link-45deg"></i> Liên Kết');
+                        showToast("❌ Không thể kết nối tới máy chủ!", "danger");
+                    }
+                });
+            });
+
+            // AJAX: Đăng ký thành viên mới (Cần cả Số điện thoại và Họ tên)
+            $("#btnRegisterMember").click(function() {
+                var phone = $("#registerPhoneInput").val();
+                var fullName = $("#registerNameInput").val();
+                
+                if (!phone) {
+                    showToast("⚠️ Vui lòng nhập số điện thoại để đăng ký!", "warning");
+                    return;
+                }
+                if (!fullName) {
+                    showToast("⚠️ Vui lòng nhập Họ & Tên của bạn!", "warning");
+                    return;
+                }
+
+                $("#btnRegisterMember").prop("disabled", true);
+                $("#btnRegisterText").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang đăng ký...');
+
+                $.ajax({
+                    url: '/Client/RegisterMember',
+                    type: 'POST',
+                    data: { phone: phone, fullName: fullName },
+                    success: function(res) {
+                        $("#btnRegisterMember").prop("disabled", false);
+                        if (res.success) {
+                            showToast("🌟 Đăng ký thành viên mới thành công! Xin chào " + res.name, "success");
+                            
+                            isMemberLinked = true;
+                            memberPoints = res.points;
+                            memberTier = res.tier;
+                            redeemedPoints = 0;
+
+                            // Cập nhật UI sang trạng thái đã liên kết
+                            $("#loyalty-unlinked").addClass("d-none");
+                            $("#loyalty-linked").removeClass("d-none");
+                            
+                            // Thiết lập thẻ thành viên 3D
+                            $("#cardMemberName").text(res.name);
+                            $("#cardPhoneNumber").text(res.phone);
+                            $("#cardPointsVal").text(res.points);
+                            $("#memberDisplayName").text(res.name);
+                            
+                            $("#memberCard3D").removeClass("card-bronze card-silver card-gold card-platinum").addClass("card-bronze");
+                            $("#cardTierName").text("ĐỒNG MEMBER");
+
+                            // Cập nhật thanh tiến trình thăng hạng
+                            updateTierProgress(res.accumulatedPoints, res.tier);
+                            setupCard3DEffect();
+
+                            // Cập nhật tray thanh toán
+                            $("#lblTrayAvailablePoints").text(res.points);
+                            $("#inputRedeemPoints").attr("max", res.points).val(0);
+                            
+                            // Phóng pháo hoa confetti chúc mừng thành viên mới
+                            triggerConfetti();
+                            updateTotal();
+                        } else {
+                            showToast("❌ " + res.message, "danger");
+                            $("#btnRegisterText").html('<i class="bi bi-check-lg"></i> Đăng Ký');
+
+                            // Tự động chuyển hướng sang tab Liên Kết nếu tài khoản đã tồn tại
+                            if (res.message.indexOf("đã được đăng ký") > -1) {
+                                $("#tabLink").click();
+                                $("#linkPhoneInput").val(phone);
+                            }
+                        }
+                    },
+                    error: function() {
+                        $("#btnRegisterMember").prop("disabled", false);
+                        $("#btnRegisterText").html('<i class="bi bi-check-lg"></i> Đăng Ký');
+                        showToast("❌ Không thể kết nối tới máy chủ!", "danger");
+                    }
+                });
+            });
+
+            // AJAX: Hủy liên kết
+            $("#btnUnlinkMember").click(function() {
+                $.ajax({
+                    url: '/Client/UnlinkMember',
+                    type: 'POST',
+                    success: function(res) {
+                        if (res.success) {
+                            showToast("ℹ️ Đã hủy liên kết tài khoản thành viên khỏi bàn này.", "default");
+                            
+                            isMemberLinked = false;
+                            memberPoints = 0;
+                            redeemedPoints = 0;
+
+                            // Reset UI Form
+                            $("#loyalty-linked").addClass("d-none");
+                            $("#loyalty-unlinked").removeClass("d-none");
+                            
+                            // Clear inputs
+                            $("#linkPhoneInput").val("");
+                            $("#registerPhoneInput").val("");
+                            $("#registerNameInput").val("");
+                            
+                            // Trở về tab liên kết mặc định
+                            $("#tabLink").click();
+
+                            updateTotal();
+                        }
+                    }
+                });
+            });
+
+            // AJAX: Áp dụng điểm đổi giảm giá
+            $("#btnApplyRedeem").click(function() {
+                var points = parseInt($("#inputRedeemPoints").val()) || 0;
+                if (points < 0) {
+                    showToast("⚠️ Số điểm không hợp lệ!", "warning");
+                    return;
+                }
+                if (points > memberPoints) {
+                    showToast("⚠️ Bạn chỉ có tối đa " + memberPoints + " điểm!", "warning");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Client/ApplyPoints',
+                    type: 'POST',
+                    data: { points: points },
+                    success: function(res) {
+                        if (res.success) {
+                            redeemedPoints = res.redeemedPoints;
+                            showToast("🎉 Đổi điểm thành công! Đã giảm ngay " + (res.redeemedPoints * 1000).toLocaleString() + " đ cho đơn này.", "success");
+                            
+                            // Tạo hiệu ứng pháo hoa giấy (confetti) ăn mừng
+                            triggerConfetti();
+
+                            updateTotal();
+                        } else {
+                            showToast("❌ " + res.message, "danger");
+                        }
+                    }
+                });
+            });
+
+            // Pháo hoa giấy ăn mừng đổi điểm thành công
+            function triggerConfetti() {
+                var $container = $('<div class="confetti-container"></div>');
+                $('body').append($container);
+                
+                var colors = ['#F5A623', '#E8651A', '#FFD54F', '#00E676', '#00E5FF'];
+                for (var i = 0; i < 50; i++) {
+                    var $piece = $('<div class="confetti-piece"></div>');
+                    var color = colors[Math.floor(Math.random() * colors.length)];
+                    $piece.css({
+                        'background-color': color,
+                        'left': Math.random() * 100 + '%',
+                        'transform': 'rotate(' + Math.random() * 360 + 'deg)',
+                        'animation-delay': Math.random() * 0.5 + 's',
+                        'width': Math.random() * 8 + 6 + 'px',
+                        'height': Math.random() * 12 + 6 + 'px'
+                    });
+                    $container.append($piece);
+                }
+                
+                setTimeout(function() {
+                    $container.remove();
+                }, 3500);
+            }
+            // ---------------------------------------------------
+
+            // Khắc phục triệt để lỗi fixed position bị ảnh hưởng bởi transform
+            function updateTrayPosition() {
+                // Xóa transform của parent để fixed hoạt động theo viewport
+                $('.main-container').css('transform', 'none');
+                
+                let isCustomer = $('.customer-bottom-nav').length > 0;
+                if (isCustomer) {
+                    $('.tray-float').css({
+                        'bottom': '76px',
+                        'left': '0',
+                        'right': '0'
+                    });
+                } else {
+                    let leftOffset = ($(window).width() >= 992 && $('.navbar-sidebar').length > 0) ? '290px' : '0px';
+                    $('.tray-float').css({
+                        'bottom': '0',
+                        'left': leftOffset,
+                        'right': '0'
+                    });
+                }
+            }
+            
+            $(window).on('resize', updateTrayPosition);
+            updateTrayPosition(); // Gọi ngay khi load
+            
+            // 3D Tilt Effect Setup (similar to Table Map)
+            const setupTilt = () => {
+                const cards = document.querySelectorAll('.tilt-card');
+                cards.forEach(card => {
+                    card.addEventListener('mousemove', e => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = ((y - centerY) / centerY) * -8;
+                        const rotateY = ((x - centerX) / centerX) * 8;
+                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+                    });
+                });
+            };
+
+            // Magnetic Buttons Setup
+            const setupMagnetic = () => {
+                const magneticBtns = document.querySelectorAll('.magnetic-btn');
+                magneticBtns.forEach(btn => {
+                    btn.addEventListener('mousemove', e => {
+                        const rect = btn.getBoundingClientRect();
+                        const h = rect.width / 2;
+                        const x = e.clientX - rect.left - h;
+                        const y = e.clientY - rect.top - rect.height / 2;
+                        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+                    });
+                    btn.addEventListener('mouseleave', () => {
+                        btn.style.transform = `translate(0px, 0px)`;
+                    });
+                });
+            };
+
+            // Simulate loading process (Skeleton -> Actual Content)
+            setTimeout(function() {
+                // Remove category skeletons
+                $('.skeleton-container').addClass('d-none');
+                $('.actual-categories').removeClass('d-none');
+                
+                // Remove product skeletons and show actual items with staggering
+                $('.product-skeleton-item').remove();
+                
+                let delay = 0;
+                $('.product-item').removeClass('d-none').each(function() {
+                    $(this).css('animation', 'fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards');
+                    $(this).css('animation-delay', (delay * 0.05) + 's');
+                    delay++;
+                });
+
+                // Initialize advanced interactive effects after DOM is ready
+                setTimeout(() => {
+                    setupTilt();
+                    setupMagnetic();
+                }, 500);
+
+            }, 800); // 0.8s artificial delay for shimmer loading effect
+
+            // Cart Logic
             var selectedCategory = "All";
 
             function updateTotal() {
-
                 let total = 0;
-
-                $('.product-item').each(function () {
-
-                    let qty = parseInt(
-                        $(this).find('.qty-input').val()
-                    ) || 0;
-
-                    let basePrice = parseFloat(
-                        $(this).find('.qty-input').data('price')
-                    ) || 0;
-
-                    let size = $(this)
-                        .find('select[name="sizes"]')
-                        .val();
-
+                $('.product-item:not(.d-none)').each(function () {
+                    let qty = parseInt($(this).find('.qty-input').val()) || 0;
+                    let basePrice = parseFloat($(this).find('.qty-input').data('price')) || 0;
+                    let size = $(this).find('select[name="sizes"]').val();
                     let finalPrice = basePrice;
 
-                    // Cộng thêm 10k nếu size L
                     if (size === "L") {
                         finalPrice += 10000;
                     }
@@ -308,11 +875,28 @@
                     total += qty * finalPrice;
                 });
 
-                $('#liveTotalAmount').text(
-                    total.toLocaleString('vi-VN') + ' đ'
-                );
+                // --- TÍNH TOÁN ĐỔI ĐIỂM GIẢM GIÁ TRÊN GIAO DIỆN ---
+                if (isMemberLinked && total > 0) {
+                    $('#trayLoyaltyRedeem').removeClass('d-none');
+                } else {
+                    $('#trayLoyaltyRedeem').addClass('d-none');
+                }
 
-                // Hiệu ứng tray
+                let discount = redeemedPoints * 1000;
+                let finalTotal = total - discount;
+                if (finalTotal < 0) finalTotal = 0;
+
+                if (discount > 0 && total > 0) {
+                    $('#lblOriginalTotal').text(total.toLocaleString('vi-VN') + ' đ').removeClass('d-none');
+                    $('#lblDiscountBadge').text('Giảm ' + discount.toLocaleString('vi-VN') + ' đ').removeClass('d-none');
+                    $('#liveTotalAmount').text(finalTotal.toLocaleString('vi-VN') + ' đ');
+                } else {
+                    $('#lblOriginalTotal').addClass('d-none');
+                    $('#lblDiscountBadge').addClass('d-none');
+                    $('#liveTotalAmount').text(total.toLocaleString('vi-VN') + ' đ');
+                }
+                // -------------------------------------------------
+
                 if (total > 0) {
                     $('.tray-float').addClass('tray-active');
                 } else {
@@ -320,147 +904,153 @@
                 }
             }
 
-            // Plus quantity
             $('.btn-plus').click(function () {
-
                 var input = $(this).siblings('.qty-input');
-
-                input.val(
-                    parseInt(input.val() || 0) + 1
-                );
-
+                input.val(parseInt(input.val() || 0) + 1);
+                
+                // Optional: Play a tiny sound or haptic feedback here if using mobile PWA
+                if (navigator.vibrate) navigator.vibrate(50);
+                
                 updateTotal();
             });
 
-            // Minus quantity
             $('.btn-minus').click(function () {
-
                 var input = $(this).siblings('.qty-input');
-
-                var currentVal =
-                    parseInt(input.val() || 0);
-
+                var currentVal = parseInt(input.val() || 0);
                 if (currentVal > 0) {
-
                     input.val(currentVal - 1);
-
+                    if (navigator.vibrate) navigator.vibrate(50);
                     updateTotal();
                 }
             });
 
-            // Nhập số lượng
             $('.qty-input').on('input', function () {
-
-                if ($(this).val() < 0) {
-                    $(this).val(0);
-                }
-
+                if ($(this).val() < 0) $(this).val(0);
                 updateTotal();
             });
 
-            // Đổi size => cập nhật tiền
             $('select[name="sizes"]').change(function () {
                 updateTotal();
             });
 
-            // Search filtering
+            // Filtering
             $('#searchInput').on('input', filterProducts);
 
-            // Category filter
             $('.btn-filter').click(function () {
-
-                $('.btn-filter')
-                    .removeClass('active-pill btn-cafe')
-                    .addClass('btn-light');
-
-                $(this)
-                    .addClass('active-pill btn-cafe')
-                    .removeClass('btn-light');
-
+                $('.btn-filter').removeClass('active-pill btn-cafe').addClass('btn-light');
+                $(this).addClass('active-pill btn-cafe').removeClass('btn-light');
                 selectedCategory = $(this).data('category');
-
                 filterProducts();
             });
 
             function filterProducts() {
-
-                var searchStr =
-                    $('#searchInput').val().toLowerCase();
-
+                var searchStr = $('#searchInput').val().toLowerCase();
                 let totalVisible = 0;
 
+                // Simple reset for animations
+                $('.product-item').css('animation', 'none');
+
                 $('.category-section').each(function () {
-
-                    var sectionCat =
-                        $(this).data('category') || '';
-
-                    var showSection =
-                        (selectedCategory === 'All'
-                            || sectionCat === selectedCategory);
-
+                    var sectionCat = $(this).data('category') || '';
+                    var showSection = (selectedCategory === 'All' || sectionCat === selectedCategory);
                     let visibleCount = 0;
 
                     $(this).find('.product-item').each(function () {
-
-                        var itemName =
-                            $(this).data('name') || '';
-
-                        if (
-                            itemName.indexOf(searchStr) > -1
-                            && showSection
-                        ) {
-
+                        var itemName = $(this).data('name') || '';
+                        
+                        if (itemName.indexOf(searchStr) > -1 && showSection) {
                             $(this).removeClass('d-none');
-
                             visibleCount++;
-
                             totalVisible++;
-                        }
-                        else {
-
+                        } else {
                             $(this).addClass('d-none');
+                            // Reset qty if hidden? Optional. Let's keep it for now.
                         }
                     });
 
                     if (visibleCount > 0) {
-
                         $(this).removeClass('d-none');
-                    }
-                    else {
-
+                    } else {
                         $(this).addClass('d-none');
                     }
                 });
 
                 if (totalVisible === 0) {
-
-                    $('#noProductsMessage')
-                        .removeClass('d-none');
+                    $('#noProductsMessage').removeClass('d-none');
+                } else {
+                    $('#noProductsMessage').addClass('d-none');
+                    
+                    // Re-trigger entrance animation slightly
+                    let delay = 0;
+                    $('.product-item:not(.d-none)').each(function() {
+                        // force reflow
+                        void this.offsetWidth; 
+                        $(this).css('animation', 'fadeInUp 0.4s ease-out forwards');
+                        $(this).css('animation-delay', (delay * 0.03) + 's');
+                        delay++;
+                    });
                 }
-                else {
-
-                    $('#noProductsMessage')
-                        .addClass('d-none');
-                }
+                
+                updateTotal();
             }
-
         });
     </script>
 }
 
 @section Styles {
     <style>
-        .product-card {
+        /* Premium Tab Buttons for Loyalty Program */
+        .member-tabs {
+            border: 1px solid rgba(245, 166, 35, 0.15);
+            background-color: var(--cafe-bg);
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            padding: 4px;
+            margin-bottom: 5px;
+        }
+        .member-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--cafe-text-muted);
+            padding: 8px 24px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: var(--radius-pill);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .member-tab-btn.active {
+            background: linear-gradient(135deg, var(--cafe-primary) 0%, var(--cafe-secondary) 100%);
+            color: #0D0D0D;
+            box-shadow: 0 4px 12px rgba(245, 166, 35, 0.3);
+        }
+        .member-tab-btn:hover:not(.active) {
+            color: var(--cafe-text);
+            background: rgba(245, 166, 35, 0.05);
+        }
+
+        /* Container overrides for this specific page */
+        .search-filter-wrapper {
+            background: var(--cafe-surface);
             border-radius: var(--radius-md);
-            border: 1px solid rgba(141, 110, 99, 0.08);
-            background-color: var(--cafe-surface);
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid rgba(245, 166, 35, 0.08);
+            border-bottom: 2px solid var(--cafe-primary);
         }
         
+        .product-card {
+            background-color: var(--cafe-surface);
+            border: 1px solid rgba(245, 166, 35, 0.08);
+        }
+
+        .tilt-card {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            will-change: transform;
+        }
+
         .card-image-container {
-            height: 235px; /* Tăng chiều cao của ảnh món để nổi bật hơn hẳn */
-            background: linear-gradient(135deg, var(--cafe-accent) 0%, var(--cafe-secondary) 100%);
+            height: 180px;
+            background: linear-gradient(135deg, var(--cafe-primary) 0%, var(--cafe-secondary) 100%);
             border-radius: var(--radius-md) var(--radius-md) 0 0;
+            position: relative;
         }
 
         .product-img {
@@ -471,121 +1061,105 @@
         }
 
         .product-card:hover .product-img {
-            transform: scale(1.15); /* Phóng to nổi bật cực mạnh khi di chuột */
+            transform: scale(1.1);
         }
 
-        /* CSS slide quảng cáo */
-        .promo-slide {
-            border-radius: var(--radius-md);
-            position: relative;
-            overflow: hidden;
+        /* Qty Counter Group Overrides for Dark Mode */
+        .qty-group {
+            background-color: var(--cafe-bg) !important;
+            border: 1px solid rgba(245, 166, 35, 0.1);
         }
-        .promo-content {
-            max-width: 70%;
-            z-index: 5;
-        }
-        .promo-icon {
-            font-size: 5.5rem;
-            transform: rotate(12deg);
-            opacity: 0.8;
-            z-index: 2;
-        }
-        .carousel-indicators [data-bs-target] {
-            background-color: rgba(255, 255, 255, 0.4);
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            margin: 0 4px;
-        }
-        .carousel-indicators .active {
-            background-color: #FFFFFF;
-            width: 22px;
-            border-radius: 5px;
-        }
-
-        .no-image-visual {
-            height: 100%;
-            width: 100%;
-        }
-
         .qty-group button {
-            transition: all 0.2s ease;
+            width: 34px !important;
+            height: 34px !important;
+            border: none !important;
         }
-        .qty-group button:active {
-            transform: scale(0.9);
+        .qty-group .btn-minus {
+            background-color: var(--cafe-surface-hover) !important;
+            color: var(--cafe-text) !important;
+        }
+        .qty-group .btn-plus {
+            background-color: var(--cafe-primary) !important;
+            color: #0D0D0D !important;
+        }
+
+        /* Skeleton specialized styling */
+        .skeleton-pill {
+            width: 90px;
+            height: 38px;
+            border-radius: var(--radius-pill);
+            flex: 0 0 auto;
         }
         
-        .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        /* Search & Filter wrapper */
-        .search-filter-wrapper {
-            background: #FFFFFF;
-            border-radius: 20px;
-            border: 1px solid rgba(141, 110, 99, 0.08);
-            box-shadow: 0 10px 30px rgba(62, 39, 35, 0.03);
-            padding: 20px;
-        }
-        .search-filter-wrapper .form-control {
-            border: 1.5px solid rgba(141, 110, 99, 0.12) !important;
-            font-size: 1.05rem;
-            transition: all 0.25s ease;
-            background-color: var(--cafe-light) !important;
-        }
-        .search-filter-wrapper .form-control:focus {
-            border-color: var(--cafe-secondary) !important;
-            box-shadow: 0 0 0 4px rgba(141, 110, 99, 0.08) !important;
-            background-color: #FFFFFF !important;
-        }
-
-        /* Horizontal scrollable category list */
+        /* Category scrolling overrides */
         .category-scroll-container {
             display: flex;
-            gap: 10px;
             overflow-x: auto;
-            white-space: nowrap;
-            padding-bottom: 8px;
-            margin-top: 15px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(141, 110, 99, 0.3) transparent;
-            -webkit-overflow-scrolling: touch;
-        }
-        .category-scroll-container::-webkit-scrollbar {
-            height: 5px;
-        }
-        .category-scroll-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .category-scroll-container::-webkit-scrollbar-thumb {
-            background-color: rgba(141, 110, 99, 0.25);
-            border-radius: 10px;
-        }
-        .category-scroll-container .btn-filter {
-            flex: 0 0 auto;
-            border-radius: 50px;
-            font-weight: 600;
-            padding: 8px 20px;
-            font-size: 0.9rem;
-            border: 1.5px solid rgba(141, 110, 99, 0.12);
-            transition: all 0.25s ease;
+            flex-wrap: nowrap;
+            gap: 12px; /* Increased gap for better touch targets */
+            padding-bottom: 12px; /* Space for scrollbar */
+            margin-bottom: -4px; /* Offset padding visually */
         }
         
-        .active-pill {
-            border-color: transparent !important;
-            box-shadow: 0 4px 12px rgba(62, 39, 35, 0.15);
+        /* Custom styled visible scrollbar */
+        .category-scroll-container::-webkit-scrollbar {
+            height: 6px;
+            display: block; /* Make scrollbar visible */
+        }
+        .category-scroll-container::-webkit-scrollbar-track {
+            background: rgba(245, 166, 35, 0.05); 
+            border-radius: 10px;
+        }
+        .category-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(245, 166, 35, 0.5); /* Semi transparent primary */
+            border-radius: 10px;
+        }
+        .category-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: var(--cafe-primary); /* Full color on hover/interaction */
         }
 
-        /* Tray animations */
+        .category-scroll-container .btn-filter {
+            background-color: var(--cafe-bg);
+            color: var(--cafe-text-muted);
+            border-color: rgba(245, 166, 35, 0.15);
+            flex-shrink: 0; /* Prevent buttons from squishing */
+            padding: 10px 24px; /* Larger buttons */
+            font-weight: 600;
+        }
+        .category-scroll-container .btn-cafe {
+            background: linear-gradient(135deg, var(--cafe-primary) 0%, var(--cafe-secondary) 100%);
+            color: #0D0D0D;
+            border-color: transparent;
+        }
+        
         .tray-float {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15);
-            transform: translateY(10px);
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(245, 166, 35, 0.2) !important;
+            transform: translateY(120%);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15), opacity 0.3s ease;
+            position: fixed;
+            z-index: 1050;
         }
         .tray-active {
-            transform: translateY(0);
-            border-top: 2.5px solid var(--cafe-secondary) !important;
-            box-shadow: 0 -10px 30px rgba(62, 39, 35, 0.12) !important;
+            transform: translateY(0) !important;
+            opacity: 1;
+            border-top: 2.5px solid var(--cafe-primary) !important;
+            box-shadow: 0 -10px 40px rgba(245, 166, 35, 0.2) !important;
+        }
+        
+        /* Product Item Opacity (for stagger anim) */
+        .product-item {
+            opacity: 0; 
+            /* Let the animation handle it */
+        }
+        
+        @@media (max-width: 576px) {
+            .card-image-container { height: 130px; }
+            .product-card h5 { font-size: 1.1rem !important; min-height: 2.8rem; }
+            .product-card p { font-size: 1.15rem !important; }
         }
     </style>
 }

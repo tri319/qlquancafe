@@ -102,10 +102,29 @@
                     }
                 </div>
                 <div class="col-md-5">
-                    <div class="receipt-total-box d-flex justify-content-between align-items-center p-3">
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-1 small text-muted">
+                            <span>Tạm tính món</span>
+                            <span class="font-monospace">@((Model.TotalAmount + Model.DiscountAmount).ToString("N0")) đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 small text-success">
+                            <span>Giảm giá thành viên</span>
+                            <span class="font-monospace">-@Model.DiscountAmount.ToString("N0") đ</span>
+                        </div>
+                    }
+                    <div class="receipt-total-box d-flex justify-content-between align-items-center p-3 mb-2">
                         <span class="fw-bold text-uppercase text-muted" style="font-size: 0.85rem; letter-spacing: 1px;">TỔNG CỘNG</span>
                         <h4 class="text-danger fw-extrabold mb-0 fs-3 font-monospace">@Model.TotalAmount.ToString("N0") đ</h4>
                     </div>
+                    @if (Model.PointsEarned > 0)
+                    {
+                        <div class="text-end small text-muted">
+                            <span class="badge bg-success-subtle text-success border px-3 py-1 rounded-pill">
+                                <i class="bi bi-stars"></i> Tích lũy nhận được: +@Model.PointsEarned điểm
+                            </span>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -208,11 +227,49 @@
 }
 
 @section Scripts {
+    <!-- Tích hợp thư viện SignalR Client của Microsoft thông qua CDN để kích hoạt giao tiếp hai chiều thời gian thực -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
         $(document).ready(function() {
+            // [XỬ LÝ GỌI NHÂN VIÊN] Khi khách hàng bấm nút "Thanh toán tiền mặt" tại bàn
+            // Hệ thống sẽ tự động kích hoạt sự kiện bấm nút gọi phục vụ chung trên thanh điều hướng của khách hàng
             $("#call-staff-cash-btn").click(function() {
-                // Trigger the staff call button click from the customer layout
                 $("#call-staff-btn").click();
+            });
+
+            // [KHỞI TẠO SIGNALR] Cấu hình và mở cổng kết nối WebSockets tới NotificationHub trên máy chủ
+            // Sử dụng cơ chế tự động kết nối lại (.withAutomaticReconnect) khi gặp sự cố mạng đột ngột
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .withAutomaticReconnect()
+                .build();
+
+            // Bắt đầu mở cổng kết nối thời gian thực
+            connection.start().then(function () {
+                console.log("Details page SignalR connected successfully!");
+            }).catch(function (err) {
+                console.error("SignalR connection fail in Details page: ", err.toString());
+            });
+
+            // [ĐỒNG BỘ THANH TOÁN] Lắng nghe sự kiện "ReceiveOrderPaid" phát ra từ phía máy chủ
+            // Kích hoạt khi nhân viên xác nhận thanh toán tiền mặt thành công hoặc nhận callback thành công từ VNPAY
+            connection.on("ReceiveOrderPaid", function(orderId) {
+                var currentOrderId = @Model.Id;
+                // Kiểm tra xem hóa đơn vừa được thanh toán thành công có trùng khớp với hóa đơn khách hàng đang xem hay không
+                if (orderId === currentOrderId) {
+                    // Nếu hệ thống hỗ trợ phương thức hiển thị thông báo Toast đẹp mắt, hãy hiển thị Toast
+                    if (typeof showToast === "function") {
+                        showToast("🎉 Hóa đơn đã được thanh toán thành công! Hệ thống đang tự động tải lại...", "success");
+                    } else {
+                        // Phương thức dự phòng khi không tìm thấy hàm Toast
+                        alert("🎉 Hóa đơn đã được thanh toán thành công!");
+                    }
+
+                    // Thiết lập bộ hẹn giờ trì hoãn 1.5 giây để khách hàng kịp xem thông báo chúc mừng, sau đó tự động reload trang
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                }
             });
         });
     </script>

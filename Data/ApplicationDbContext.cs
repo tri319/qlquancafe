@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using QLquancafe.Models;
 
@@ -26,6 +26,9 @@ namespace QLquancafe.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
+        // 4. Quản lý thành viên & Tích điểm
+        public DbSet<Customer> Customers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Quan trọng: Phải giữ dòng này để cấu hình các bảng Identity (User, Role)
@@ -40,6 +43,10 @@ namespace QLquancafe.Data
                 .Property(o => o.TotalAmount)
                 .HasColumnType("decimal(18,2)");
 
+            modelBuilder.Entity<Order>()
+                .Property(o => o.DiscountAmount)
+                .HasColumnType("decimal(18,2)");
+
             modelBuilder.Entity<OrderDetail>()
                 .Property(od => od.UnitPrice)
                 .HasColumnType("decimal(18,2)");
@@ -48,6 +55,18 @@ namespace QLquancafe.Data
             modelBuilder.Entity<Table>()
                 .HasIndex(t => t.TableCode)
                 .IsUnique(); // Mã bàn (BAN01, BAN02...) không được trùng nhau
+
+            // --- Cấu hình ràng buộc bảng Customer ---
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.PhoneNumber)
+                .IsUnique(); // Số điện thoại thành viên không trùng nhau
+
+            // --- Cấu hình quan hệ một-nhiều giữa Customer và Order ---
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Customer)
+                .WithMany(c => c.Orders)
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull); // Nếu xóa tài khoản thành viên, đơn hàng vẫn được giữ lại nhưng đặt CustomerId = null
 
             // --- CẤU HÌNH QUAN HỆ CHUẨN ĐỂ XÓA TableId1 ---
             modelBuilder.Entity<Order>()

@@ -1,0 +1,265 @@
+@model QLquancafe.Models.Order
+@{
+    var timeElapsed = (DateTime.Now - Model.OrderDate).TotalMinutes;
+    string initBorderClass = "border-green";
+    if (timeElapsed >= 10) { initBorderClass = "border-red-pulsing"; }
+    else if (timeElapsed >= 5) { initBorderClass = "border-yellow"; }
+}
+
+<div class="kitchen-order-card glass-panel @initBorderClass" id="card_@Model.Id" 
+     data-order-id="@Model.Id" data-order-date="@Model.OrderDate.ToString("o")"
+     draggable="true" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"
+     style="cursor: grab; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative;">
+    
+    <!-- Top Row: Table Name & Live Timer -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="fw-extrabold text-uppercase text-cafe fs-5" style="font-weight: 800;">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>@(Model.Table?.TableName ?? ("Bàn " + Model.TableId))
+        </span>
+        <span class="timer-badge font-monospace fw-bold">00:00</span>
+    </div>
+
+    <!-- Items List -->
+    <div class="order-items-list mb-3">
+        @foreach (var detail in Model.OrderDetails)
+        {
+            <div class="d-flex justify-content-between align-items-start border-bottom border-light-subtle py-2">
+                <div class="text-start">
+                    <span class="item-qty me-2 font-monospace fw-bold">x@detail.Quantity</span>
+                    <span class="item-name fw-bold">@detail.Product?.Name</span>
+                    
+                    <!-- Custom Badges (Size, Sugar, Ice) -->
+                    <div class="mt-1 d-flex flex-wrap gap-1">
+                        @if (detail.Size == "L")
+                        {
+                            <span class="badge badge-neon-size">Size L</span>
+                        }
+                        else if (!string.IsNullOrEmpty(detail.Size))
+                        {
+                            <span class="badge badge-neon-size-m">Size M</span>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(detail.SugarLevel) && detail.SugarLevel != "100%")
+                        {
+                            <span class="badge badge-neon-sugar">糖 @detail.SugarLevel Đường</span>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(detail.IceLevel) && detail.IceLevel != "100%")
+                        {
+                            <span class="badge badge-neon-ice">❄ @detail.IceLevel Đá</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Bottom Row: Touch/Tapped Fallback Actions area -->
+    <div class="card-action-area mt-3">
+        @if (Model.Status == "Pending")
+        {
+            <button type="button" onclick="changeStatus(@Model.Id, 'Preparing')" class="btn btn-sm btn-pill btn-cafe-preparing w-100 py-2 font-semibold">
+                <i class="bi bi-play-fill me-1"></i> Bắt đầu Pha Chế
+            </button>
+        }
+        else if (Model.Status == "Preparing")
+        {
+            <button type="button" onclick="changeStatus(@Model.Id, 'Ready')" class="btn btn-sm btn-pill btn-cafe-ready w-100 py-2 font-semibold">
+                <i class="bi bi-check2 me-1"></i> Hoàn Thành ➔
+            </button>
+        }
+        else if (Model.Status == "Ready")
+        {
+            <button type="button" onclick="changeStatus(@Model.Id, 'Completed')" class="btn btn-sm btn-pill btn-cafe-complete w-100 py-2 font-semibold">
+                <i class="bi bi-box-arrow-right me-1"></i> Đã Giao Khách
+            </button>
+        }
+    </div>
+</div>
+
+<style>
+    /* Card Specialized Styles */
+    .kitchen-order-card {
+        background: var(--glass-bg) !important;
+        border: 2px solid var(--glass-border) !important;
+        padding: 18px !important;
+        border-radius: var(--radius-md) !important;
+        box-shadow: var(--glass-shadow) !important;
+        color: var(--cafe-text) !important;
+    }
+    
+    .kitchen-order-card:hover {
+        transform: translateY(-3px) scale(1.015);
+    }
+
+    .item-qty {
+        color: var(--cafe-primary);
+        font-size: 1.05rem;
+    }
+
+    .item-name {
+        font-size: 0.95rem;
+        color: var(--cafe-text) !important;
+    }
+
+    .text-cafe {
+        color: var(--cafe-primary) !important;
+    }
+
+    /* Live Timer Glow Badge */
+    .timer-badge {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #fff;
+        border-radius: var(--radius-pill);
+        padding: 4px 12px;
+        font-size: 0.78rem;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    /* Borders matching timers */
+    .border-green {
+        border: 2px solid rgba(0, 230, 118, 0.4) !important;
+        box-shadow: 0 5px 15px rgba(0, 230, 118, 0.15) !important;
+    }
+    
+    .border-yellow {
+        border: 2px solid rgba(245, 166, 35, 0.5) !important;
+        box-shadow: 0 5px 15px rgba(245, 166, 35, 0.2) !important;
+    }
+    
+    .border-red-pulsing {
+        border: 2px solid #ef5350 !important;
+        animation: cardRedPulse 1.2s infinite ease-in-out;
+    }
+
+    @@keyframes cardRedPulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(239, 83, 80, 0.3); }
+        50% { box-shadow: 0 0 25px rgba(239, 83, 80, 0.7); }
+    }
+
+    /* Neon badges for Size, Sugar, Ice (Theme Aware) */
+    .badge-neon-size {
+        background: linear-gradient(135deg, #e8651a 0%, #ff9800 100%);
+        color: #FFFFFF;
+        font-weight: 800;
+        font-size: 0.65rem;
+        letter-spacing: 0.5px;
+        border-radius: var(--radius-pill);
+    }
+    .badge-neon-size-m {
+        background: rgba(0, 0, 0, 0.06);
+        color: var(--cafe-text-muted);
+        font-weight: 600;
+        font-size: 0.65rem;
+        border-radius: var(--radius-pill);
+    }
+
+    .badge-neon-sugar {
+        background: rgba(210, 135, 38, 0.08);
+        color: var(--cafe-primary-dark);
+        border: 1px solid rgba(210, 135, 38, 0.2);
+        font-weight: 600;
+        font-size: 0.65rem;
+        border-radius: var(--radius-pill);
+    }
+
+    .badge-neon-ice {
+        background: rgba(59, 130, 246, 0.08);
+        color: var(--info-color);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        font-weight: 600;
+        font-size: 0.65rem;
+        border-radius: var(--radius-pill);
+    }
+
+    /* Dark Mode Badges Override */
+    [data-theme="dark"] .badge-neon-size {
+        color: #0D0D0D;
+    }
+    [data-theme="dark"] .badge-neon-size-m {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+    }
+    [data-theme="dark"] .badge-neon-sugar {
+        background: rgba(255, 213, 79, 0.1);
+        color: #ffd54f;
+        border: 1px solid rgba(255, 213, 79, 0.2);
+    }
+    [data-theme="dark"] .badge-neon-ice {
+        background: rgba(0, 229, 255, 0.1);
+        color: #00e5ff;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+    }
+
+    /* Button gradients matching states (Theme Aware) */
+    .btn-cafe-preparing {
+        background: rgba(245, 166, 35, 0.08);
+        color: var(--cafe-primary-dark);
+        border: 1px solid rgba(245, 166, 35, 0.25) !important;
+        transition: all 0.25s ease;
+    }
+    .btn-cafe-preparing:hover {
+        background: var(--cafe-primary);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+    }
+
+    .btn-cafe-ready {
+        background: rgba(0, 230, 118, 0.08);
+        color: var(--success-color);
+        border: 1px solid rgba(0, 230, 118, 0.25) !important;
+        transition: all 0.25s ease;
+    }
+    .btn-cafe-ready:hover {
+        background: var(--success-color);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
+    }
+
+    .btn-cafe-complete {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--cafe-text-muted);
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+        transition: all 0.25s ease;
+    }
+    .btn-cafe-complete:hover {
+        background: var(--cafe-text);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Dark Mode Cards and Buttons Override */
+    [data-theme="dark"] .kitchen-order-card {
+        background: rgba(30, 30, 30, 0.85) !important;
+        border: 2px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+    }
+
+    [data-theme="dark"] .btn-cafe-preparing {
+        background: rgba(245, 166, 35, 0.1);
+        color: var(--cafe-primary);
+        border: 1px solid rgba(245, 166, 35, 0.3) !important;
+    }
+    [data-theme="dark"] .btn-cafe-preparing:hover {
+        color: #0d0d0d;
+    }
+    [data-theme="dark"] .btn-cafe-ready {
+        background: rgba(0, 230, 118, 0.1);
+        color: var(--success-color);
+        border: 1px solid rgba(0, 230, 118, 0.3) !important;
+    }
+    [data-theme="dark"] .btn-cafe-ready:hover {
+        color: #0d0d0d;
+    }
+    [data-theme="dark"] .btn-cafe-complete {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="dark"] .btn-cafe-complete:hover {
+        background: #fff;
+        color: #0d0d0d;
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    }
+</style>

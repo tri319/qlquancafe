@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QLquancafe.Models
@@ -25,6 +25,28 @@ namespace QLquancafe.Models
 
         [Display(Name = "Trạng thái thanh toán")]
         public bool IsPaid { get; set; } = false;
+
+        [Display(Name = "Trạng thái pha chế")]
+        public string Status { get; set; } = "Pending"; // Pending, Preparing, Ready, Completed
+
+        [Display(Name = "Phương thức thanh toán")]
+        public string PaymentMethod { get; set; } = "Tiền mặt"; // Tiền mặt, VNPAY
+        // --- CÁC TRƯỜNG THÀNH VIÊN & TÍCH ĐIỂM ---
+        [Display(Name = "Mã thành viên")]
+        public int? CustomerId { get; set; }
+
+        [Display(Name = "Điểm tích lũy nhận được")]
+        public int PointsEarned { get; set; } = 0;
+
+        [Display(Name = "Điểm tích lũy đã tiêu dùng")]
+        public int PointsRedeemed { get; set; } = 0;
+
+        [Display(Name = "Số tiền giảm giá")]
+        public decimal DiscountAmount { get; set; } = 0;
+
+        [ForeignKey("CustomerId")]
+        public virtual Customer? Customer { get; set; }
+        // ----------------------------------------
 
         // Quan hệ 1 đơn hàng có nhiều chi tiết món ăn
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

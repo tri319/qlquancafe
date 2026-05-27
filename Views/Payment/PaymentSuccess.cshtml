@@ -1,3 +1,4 @@
+@model QLquancafe.Models.Order
 @using Microsoft.AspNetCore.Http
 @{
     ViewData["Title"] = "Thanh toán thành công";
@@ -5,26 +6,132 @@
     Layout = isCustomer ? "_CustomerLayout" : "_Layout";
 }
 
-<div class="container mt-5 pt-5 text-center">
-    <div class="card shadow border-0 mx-auto" style="max-width: 500px;">
-        <div class="card-body p-5">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-            <h2 class="fw-bold mt-4 mb-3">Thanh Toán Thành Công!</h2>
-            <p class="text-muted fs-5">@ViewBag.Message</p>
-            <p class="mb-4">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Chúc bạn có một trải nghiệm tuyệt vời!</p>
+<div class="container my-5 pt-4 text-center">
+    
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <div class="card thermal-receipt mx-auto stagger-item" style="--i: 1; max-width: 550px; z-index: 10;">
+        
+        <div class="card-body p-0">
+            <!-- SVG Animated Checkmark -->
+            <div class="mb-4">
+                <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="success-checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="success-checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
             
-            @if (isCustomer)
-            {
-                <a asp-controller="Client" asp-action="LeaveTable" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">
-                    <i class="bi bi-box-arrow-right me-1"></i> Rời bàn & Hoàn tất
-                </a>
-            }
-            else
-            {
-                <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">
-                    <i class="bi bi-house-door-fill me-1"></i> Về trang chủ
-                </a>
-            }
+            <h2 class="fw-extrabold mt-2 mb-2 typewriter-text mx-auto" style="color: var(--success-color); letter-spacing: 1px; display: inline-block;">GIAO DỊCH THÀNH CÔNG</h2>
+            <p class="text-muted fs-6 mb-4 font-monospace">Mã chuẩn chi: #@Model.Id-@DateTime.Now.ToString("HHmmss")</p>
+            
+            <div class="receipt-divider"></div>
+            
+            <div class="receipt-total-box d-flex justify-content-between align-items-center mb-4">
+                <span class="text-uppercase fw-bold text-muted" style="letter-spacing: 1px;">Tổng Tiền:</span>
+                <span class="text-danger fw-extrabold fs-3 font-monospace">@Model.TotalAmount.ToString("N0") đ</span>
+            </div>
+            
+            <p class="mb-5 px-3 text-muted" style="line-height: 1.6;">Cảm ơn quý khách đã sử dụng dịch vụ tại <strong class="text-cafe">QL Cafe</strong>. Chúc quý khách một ngày tràn đầy năng lượng!</p>
+            
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                @if (isCustomer)
+                {
+                    <a asp-controller="Client" asp-action="LeaveTable" class="btn btn-outline-danger btn-pill px-4 py-2 fw-bold magnetic-btn">
+                        <i class="bi bi-box-arrow-right me-1"></i> Rời bàn & Thoát
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-cafe btn-pill px-5 py-2 fw-bold magnetic-btn shadow-neon">
+                        <i class="bi bi-house-door-fill me-1"></i> Về Sơ Đồ Bàn
+                    </a>
+                }
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Confetti Generation
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#F5A623', '#E8651A', '#FFD54F', '#00E676'];
+            
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti-piece');
+                    
+                    // Randomize position, color, and animation duration
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    
+                    container.appendChild(confetti);
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 4000);
+                }, Math.random() * 1000); // Stagger generation over 1 second
+            }
+
+            // Magnetic Buttons
+            const magneticBtns = document.querySelectorAll('.magnetic-btn');
+            magneticBtns.forEach(btn => {
+                btn.addEventListener('mousemove', e => {
+                    const rect = btn.getBoundingClientRect();
+                    const h = rect.width / 2;
+                    const x = e.clientX - rect.left - h;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+                });
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.transform = `translate(0px, 0px)`;
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* SVG Animated Checkmark Specific Styles */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: var(--success-color);
+            stroke-miterlimit: 10;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+        }
+
+        .success-checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: var(--success-color);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .success-checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @@keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+}
