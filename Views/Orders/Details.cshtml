@@ -9,6 +9,74 @@
 <div class="row justify-content-center py-4 animate-fade-up">
     <div class="col-lg-8 col-md-10">
         
+        @{
+            // Determine active step level (1 to 4)
+            int currentStep = 1;
+            if (Model.IsPaid || Model.Status == "Completed")
+            {
+                currentStep = 4;
+            }
+            else if (Model.Status == "Ready")
+            {
+                currentStep = 3;
+            }
+            else if (Model.Status == "Preparing")
+            {
+                currentStep = 2;
+            }
+        }
+
+        <!-- Live Order Tracker Section -->
+        <div class="order-tracker-card p-4 mb-4 border rounded-3 text-center no-print" style="background: var(--cafe-surface); border-color: rgba(245, 166, 35, 0.15) !important; box-shadow: var(--shadow-soft); border-radius: var(--radius-md) !important;">
+            <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-center gap-2" style="color: var(--cafe-primary); font-size: 1.05rem; letter-spacing: 0.5px;">
+                <span class="spinner-grow spinner-grow-sm text-warning" role="status" aria-hidden="true"></span>
+                TIẾN ĐỘ ĐƠN HÀNG THỜI GIAN THỰC
+            </h5>
+            
+            <div class="tracker-steps-wrapper position-relative d-flex justify-content-between align-items-center mt-4 mb-2" style="padding: 0 10px;">
+                <!-- Progress Line Background -->
+                <div class="tracker-progress-line position-absolute top-50 start-0 translate-middle-y w-100" style="height: 4px; background: var(--cafe-light); z-index: 1; margin-top: -14px;">
+                    <div class="tracker-progress-line-fill h-100" id="trackerProgressFill" style="width: @((currentStep - 1) * 33.33)%; background: linear-gradient(90deg, var(--cafe-primary), var(--cafe-secondary)); transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                </div>
+                
+                <!-- Step 1: Pending -->
+                <div class="tracker-step d-flex flex-column align-items-center position-relative z-2" id="step-Pending">
+                    <div class="tracker-icon-circle d-flex align-items-center justify-content-center rounded-circle @(currentStep >= 1 ? "active" : "") @(currentStep == 1 ? "current" : "")" style="width: 48px; height: 48px; border: 2px solid var(--cafe-light); background: var(--cafe-surface); color: var(--cafe-text-muted); transition: all 0.4s ease;">
+                        <i class="bi bi-receipt fs-5"></i>
+                    </div>
+                    <span class="tracker-step-label fw-bold mt-2 small @(currentStep >= 1 ? "active-text" : "text-muted")" style="font-size: 0.78rem;">Đã Nhận Đơn</span>
+                    <span class="tracker-step-icon-sub text-muted small mt-1" style="font-size: 0.65rem;">📥</span>
+                </div>
+
+                <!-- Step 2: Preparing -->
+                <div class="tracker-step d-flex flex-column align-items-center position-relative z-2" id="step-Preparing">
+                    <div class="tracker-icon-circle d-flex align-items-center justify-content-center rounded-circle @(currentStep >= 2 ? "active" : "") @(currentStep == 2 ? "current" : "")" style="width: 48px; height: 48px; border: 2px solid var(--cafe-light); background: var(--cafe-surface); color: var(--cafe-text-muted); transition: all 0.4s ease;">
+                        <i class="bi bi-cup-hot fs-5"></i>
+                    </div>
+                    <span class="tracker-step-label fw-bold mt-2 small @(currentStep >= 2 ? "active-text" : "text-muted")" style="font-size: 0.78rem;">Đang Pha Chế</span>
+                    <span class="tracker-step-icon-sub text-muted small mt-1" style="font-size: 0.65rem;">☕</span>
+                </div>
+
+                <!-- Step 3: Ready -->
+                <div class="tracker-step d-flex flex-column align-items-center position-relative z-2" id="step-Ready">
+                    <div class="tracker-icon-circle d-flex align-items-center justify-content-center rounded-circle @(currentStep >= 3 ? "active" : "") @(currentStep == 3 ? "current" : "")" style="width: 48px; height: 48px; border: 2px solid var(--cafe-light); background: var(--cafe-surface); color: var(--cafe-text-muted); transition: all 0.4s ease;">
+                        <i class="bi bi-bell-fill fs-5"></i>
+                    </div>
+                    <span class="tracker-step-label fw-bold mt-2 small @(currentStep >= 3 ? "active-text" : "text-muted")" style="font-size: 0.78rem;">Sẵn Sàng</span>
+                    <span class="tracker-step-icon-sub text-muted small mt-1" style="font-size: 0.65rem;">🚚</span>
+                </div>
+
+                <!-- Step 4: Completed -->
+                <div class="tracker-step d-flex flex-column align-items-center position-relative z-2" id="step-Completed">
+                    <div class="tracker-icon-circle d-flex align-items-center justify-content-center rounded-circle @(currentStep >= 4 ? "active" : "") @(currentStep == 4 ? "current" : "")" style="width: 48px; height: 48px; border: 2px solid var(--cafe-light); background: var(--cafe-surface); color: var(--cafe-text-muted); transition: all 0.4s ease;">
+                        <i class="bi bi-star-fill fs-5"></i>
+                    </div>
+                    <span class="tracker-step-label fw-bold mt-2 small @(currentStep >= 4 ? "active-text" : "text-muted")" style="font-size: 0.78rem;">Hoàn Thành</span>
+                    <span class="tracker-step-icon-sub text-muted small mt-1" style="font-size: 0.65rem;">🌟</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Thermal Receipt Container -->
         <div class="thermal-receipt p-4 p-md-5">
             
@@ -193,6 +261,60 @@
             border: 2px dashed rgba(62, 39, 35, 0.15);
         }
 
+        /* Live Tracker Custom Styles */
+        .tracker-icon-circle {
+            position: relative;
+            z-index: 2;
+            background-color: var(--cafe-surface) !important;
+        }
+
+        .tracker-icon-circle.active {
+            border-color: var(--cafe-primary) !important;
+            background: linear-gradient(135deg, var(--cafe-primary) 0%, var(--cafe-secondary) 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 12px rgba(245, 166, 35, 0.35);
+        }
+
+        .tracker-icon-circle.current {
+            animation: trackerPulse 2.0s infinite ease-in-out;
+            border-color: var(--cafe-secondary) !important;
+            box-shadow: 0 0 0 4px rgba(230, 90, 40, 0.25), 0 4px 12px rgba(230, 90, 40, 0.4);
+        }
+
+        .active-text {
+            color: var(--cafe-primary) !important;
+            text-shadow: 0 0 10px rgba(245, 166, 35, 0.15);
+        }
+
+        @@keyframes trackerPulse {
+            0% {
+                box-shadow: 0 0 0 0px rgba(230, 90, 40, 0.4), 0 4px 10px rgba(230, 90, 40, 0.3);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(230, 90, 40, 0), 0 4px 10px rgba(230, 90, 40, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 0 0px rgba(230, 90, 40, 0), 0 4px 10px rgba(230, 90, 40, 0.3);
+            }
+        }
+
+        /* Responsive tracker typography */
+        @@media (max-width: 576px) {
+            .tracker-step-label {
+                font-size: 0.65rem !important;
+            }
+            .tracker-icon-circle {
+                width: 38px !important;
+                height: 38px !important;
+            }
+            .tracker-icon-circle i {
+                font-size: 0.9rem !important;
+            }
+            .tracker-progress-line {
+                margin-top: -16px !important;
+            }
+        }
+
         .receipt-table th, .receipt-table td {
             font-size: 0.95rem;
         }
@@ -230,6 +352,38 @@
     <!-- Tích hợp thư viện SignalR Client của Microsoft thông qua CDN để kích hoạt giao tiếp hai chiều thời gian thực -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
+        function updateTrackerUI(status) {
+            var stepLevel = 1;
+            if (status === "Preparing") stepLevel = 2;
+            else if (status === "Ready") stepLevel = 3;
+            else if (status === "Completed") stepLevel = 4;
+
+            // Cập nhật thanh tiến trình chạy ngang
+            var fillPercent = (stepLevel - 1) * 33.33;
+            $("#trackerProgressFill").css("width", fillPercent + "%");
+
+            // Reset tất cả các vòng tròn
+            $(".tracker-icon-circle").removeClass("active current");
+            $(".tracker-step-label").removeClass("active-text").addClass("text-muted");
+
+            // Kích hoạt các vòng tròn tương ứng với mức tiến độ
+            var steps = ["Pending", "Preparing", "Ready", "Completed"];
+            for (var i = 0; i < steps.length; i++) {
+                var idx = i + 1;
+                var stepName = steps[i];
+                var $circle = $("#step-" + stepName + " .tracker-icon-circle");
+                var $label = $("#step-" + stepName + " .tracker-step-label");
+
+                if (idx <= stepLevel) {
+                    $circle.addClass("active");
+                    $label.addClass("active-text").removeClass("text-muted");
+                }
+                if (idx === stepLevel) {
+                    $circle.addClass("current");
+                }
+            }
+        }
+
         $(document).ready(function() {
             // [XỬ LÝ GỌI NHÂN VIÊN] Khi khách hàng bấm nút "Thanh toán tiền mặt" tại bàn
             // Hệ thống sẽ tự động kích hoạt sự kiện bấm nút gọi phục vụ chung trên thanh điều hướng của khách hàng
@@ -251,12 +405,32 @@
                 console.error("SignalR connection fail in Details page: ", err.toString());
             });
 
+            // [ĐỒNG BỘ TRẠNG THÁI PHA CHẾ] Lắng nghe sự kiện "ReceiveOrderStatusUpdate" từ máy chủ
+            connection.on("ReceiveOrderStatusUpdate", function(orderId, status) {
+                var currentOrderId = @Model.Id;
+                if (orderId === currentOrderId) {
+                    updateTrackerUI(status);
+                    
+                    var statusVi = "Đã nhận đơn 📥";
+                    if (status === "Preparing") statusVi = "Đang pha chế ☕";
+                    else if (status === "Ready") statusVi = "Sẵn sàng phục vụ 🚚";
+                    else if (status === "Completed") statusVi = "Hoàn thành đơn hàng 🌟";
+
+                    if (typeof showToast === "function") {
+                        showToast("☕ Đơn hàng đã chuyển sang trạng thái: <strong>" + statusVi + "</strong>", "info");
+                    } else {
+                        console.log("Status update: " + statusVi);
+                    }
+                }
+            });
+
             // [ĐỒNG BỘ THANH TOÁN] Lắng nghe sự kiện "ReceiveOrderPaid" phát ra từ phía máy chủ
             // Kích hoạt khi nhân viên xác nhận thanh toán tiền mặt thành công hoặc nhận callback thành công từ VNPAY
             connection.on("ReceiveOrderPaid", function(orderId) {
                 var currentOrderId = @Model.Id;
                 // Kiểm tra xem hóa đơn vừa được thanh toán thành công có trùng khớp với hóa đơn khách hàng đang xem hay không
                 if (orderId === currentOrderId) {
+                    updateTrackerUI("Completed");
                     // Nếu hệ thống hỗ trợ phương thức hiển thị thông báo Toast đẹp mắt, hãy hiển thị Toast
                     if (typeof showToast === "function") {
                         showToast("🎉 Hóa đơn đã được thanh toán thành công! Hệ thống đang tự động tải lại...", "success");
